@@ -1,84 +1,104 @@
 # Looking Glass
-Modern, super simple and fresh looking glass based on Bootstrap 5 and PHP 8 (also compatible with 7.4). A looking glass is a network utility which is
-made user-friendly for everyone to use. It allows you to execute network related commands within a remote network, usually that of an ISP.
 
-[![](screenshot.png)](https://lg-nl-ams.hybula.net/)
-
-## Demo
-[See it in action here!](https://lg-nl-ams.hybula.net/)
+Modern network looking glass with **Tailwind CSS** (shadcn-style) UI and PHP 8. A looking glass is a network utility that allows you to execute network diagnostic commands from a remote server.
 
 ## Features
-- Bootstrap 5 UI.
-- Real time command output using JavaScript.
-- Supports ping/ping6, traceroute/traceroute6 and mtr/mtr6.
-- Easy to customize and to configure.
-- DNS checking to prevent unnecessary executions.
-- Latency feature from visitor to LG.
-- Dark/light/auto mode theme.
+
+- 🎨 **Modern UI** — Tailwind CSS with shadcn-style components
+- 🌙 **Dark/Light theme** — Auto-detection + manual toggle
+- ⚡ **Real-time output** — Streaming command results via JavaScript
+- 🛠 **Network tools** — ping, ping6, traceroute, traceroute6, mtr, mtr6
+- 📍 **Multi-location** — Switch between multiple LG servers
+- 🔒 **Secure** — CSRF protection, input validation, DNS checks
+- 🐳 **Docker ready** — Caddy + PHP-FPM + iPerf3
+- 📊 **Speedtest** — iPerf3 + download test files
+
+## Quick Start (Docker + Caddy)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/hybula/lookingglass.git
+cd lookingglass
+
+# 2. Create .env file
+cat > .env << 'EOF'
+CURRENT_LOCATION=Amsterdam, Netherlands
+LG_DOMAIN=lg.example.com
+LG_EMAIL=admin@example.com
+LG_IPV4=1.2.3.4
+LG_IPV6=::1
+LG_FACILITY=DataCenter Name
+LG_FACILITY_URL=https://www.peeringdb.com/
+LG_LOCATIONS=Amsterdam|https://lg-nl.example.com,Frankfurt|https://lg-de.example.com
+EOF
+
+# 3. Build and start
+docker compose -f docker-compose.caddy.yml up -d --build
+```
+
+Your Looking Glass will be available at `https://lg.example.com` with automatic SSL!
 
 ## Requirements
-- Any Linux distribution, this has been tested on RHEL 8 + 9, for NetBSD users see [#47](https://github.com/hybula/lookingglass/issues/47).
-- PHP 7.4 or higher, PHP 8 preferred.
-- IPv6 connectivity if you want to use the v6 equivalents.
-- Root access.
+
+- Docker & Docker Compose
+- Or: Linux + PHP 8.x + Web server (Nginx/Apache)
 
 ## Installation
-#### Manual
-For this installation we will assume that we are working on AlmaLinux 8 or 9. Warning: This guide does not cover any security hardening or rate limiting.
-Note: These steps also work with AlmaLinux 9, but it will install PHP 8 instead of 7.
 
-1. Install the required network tools: `dnf install mtr traceroute -y`.
-2. Install the web server with PHP (by default it will install 7.2 on RHEL 8): `dnf install httpd mod_ssl php php-posix -y`.
-3. Enable and start Apache/PHP-FPM: `systemctl enable --now httpd && systemctl enable --now php-fpm`.
-4. Let's help MTR to work, execute the following command: `ln -s /usr/sbin/mtr /usr/bin/mtr` and also mtr helper called mtr-packet: `ln -s /usr/sbin/mtr-packet /usr/bin/mtr-packet`.
-5. You *must* configure SELinux before this all works, or you can disable SELinux using `setenforce 0` and possibly make it permanent: `nano /etc/selinux/config` change to `SELINUX=disabled`.
-6. Upload the contents of the ZIP to /var/www/html/.
-7. Rename config.dist.php to config.php and adjust the settings.
-8. (Optional) You can generate test files using the following command: `dd if=/dev/zero of=100MB.bin bs=1024 count=0 seek=$[1024*100]` (this is for 100MB).
-9. (Optional) You might want to enable SSL using LetsEncrypt, take a look at [acme.sh](https://github.com/acmesh-official/acme.sh).
+### Docker with Caddy (Recommended)
 
-#### Docker
-For installation using Docker, follow these steps and run the commands on the target machine where the application should be installed:
+Uses automatic HTTPS via Let's Encrypt.
 
-1. First, ensure Docker and Docker Compose are already installed.
-2. Clone this GitHub repository: `git clone https://github.com/hybula/lookingglass.git`.
-3. Change your current working directory to the freshly cloned repository.
-4. Currently, the Docker images are not hosted on an image repository, so you'll have to build them yourself with the following command: `docker compose build`.
-5. For production use, change the environment variables inside the `docker-compose.yml` file to the desired values. For testing purposes, the default values are fine.
-6. Create and start the containers: `docker compose up -d`.
-7. Afterward, the Looking Glass should be reachable from your web browser at `http://$your_server_ip/`!
+1. Clone: `git clone https://github.com/hybula/lookingglass.git && cd lookingglass`
+2. Copy and edit `.env` file (see example above)
+3. Start: `docker compose -f docker-compose.caddy.yml up -d --build`
 
-### iPerf3 Installation (Optional)
-> It is recommended to install iPerf3 on a different server from your looking glass to avoid network congestion.
+### Docker with Nginx
 
-#### Manual
-Again, we will assume that we are working on AlmaLinux 8 or 9.
-1. Install iPerf3: `dnf install iperf3 -y`
-2. Launch iPerf3 as a daemon: `iperf3 -sD -p 5201`.
-3. (Optional) You might want to add a systemd unit file for iPerf3, so it automatically starts when the system boots up.
-4. Locate the two lines containing `LG_SPEEDTEST_CMD_INCOMING` and `LG_SPEEDTEST_CMD_OUTGOING` respectively in `config.php`.
-5. Change `hostname` in these lines to the IPv4 address of your iPerf3 server.
+Uses the original nginx configuration (no auto-SSL).
 
-#### Docker
-1. Uncomment the section for `iperf3` in `docker-compose.yml` if you want iPerf3 and the looking glass to be on the same server.
-Otherwise, please copy the `iperf3` section and save it as `docker-compose.yml` on another server with Docker and Docker Compose installed.
-2. Start the iPerf3 container: `docker compose up -d`.
-3. Locate the two lines containing `LG_SPEEDTEST_CMD_INCOMING` and `LG_SPEEDTEST_CMD_OUTGOING` respectively in `docker/php-fpm/src/config.php`.
-5. Change `hostname` in these lines to the IPv4 address of your iPerf3 server.
+1. Clone: `git clone https://github.com/hybula/lookingglass.git && cd lookingglass`
+2. Edit `docker-compose.yml` environment variables
+3. Build: `docker compose build`
+4. Start: `docker compose up -d`
 
-## Upgrading
-Upgrading from a previous version is easy, simply overwrite your current installation with the new files. Then update your config.php accordingly, the script will automatically check for missing variables.
+### Manual Installation
 
-## Customization
-If you open up config.dist.php you will see that there are some features that allows you to customize the looking glass, this includes a custom CSS override.
-You may also extend the looking glass with a custom block.
+1. Install tools: `dnf install mtr traceroute php php-posix -y`
+2. Configure web server (Apache/Nginx)
+3. Copy files to web root
+4. Rename `config.dist.php` to `config.php` and configure
+5. Create symlinks for mtr: `ln -s /usr/sbin/mtr /usr/bin/mtr`
 
-## Contribute
-We would love to receive code contributions in the form of a pull request. We prefer this over forking, so if you have any code improvements feel free to commit.
+## Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `CURRENT_LOCATION` | Server location | `Amsterdam, Netherlands` |
+| `LG_DOMAIN` | Domain for Caddy SSL | `lg.example.com` |
+| `LG_EMAIL` | Email for Let's Encrypt | `admin@example.com` |
+| `LG_IPV4` | Server IPv4 address | `1.2.3.4` |
+| `LG_IPV6` | Server IPv6 address | `2001:db8::1` |
+| `LG_FACILITY` | Datacenter name | `Equinix AM5` |
+| `LG_FACILITY_URL` | PeeringDB link | `https://peeringdb.com/fac/123` |
+| `LG_LOCATIONS` | Multi-location list | `Name1\|URL1,Name2\|URL2` |
+
+## iPerf3 Speedtest
+
+iPerf3 is included in `docker-compose.caddy.yml` with abuse protection:
+- `--one-off` — One test per connection, then restart
+- `--idle-timeout 30` — Disconnect after 30s idle
+
+## UI Variants
+
+- `index.php` — Modern Tailwind/shadcn UI (default)
+- `index.bootstrap.php` — Original Bootstrap 5 UI
 
 ## Credits
-This project is inspired by the [LookingGlass project](https://github.com/telephone/LookingGlass) of @telephone and uses his procExecute() function, although slightly modified.
-It would be great to keep the "powered by" link the footer to help development of this project.
+
+Based on [Hybula Looking Glass](https://github.com/hybula/lookingglass).
+Inspired by [telephone/LookingGlass](https://github.com/telephone/LookingGlass).
 
 ## License
-```Apache License, Version 2.0 and the Commons Clause Restriction```
+
+Apache License 2.0 with Commons Clause Restriction
