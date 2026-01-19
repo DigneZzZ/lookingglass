@@ -261,6 +261,18 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
         <header class="flex items-center justify-between pb-6 mb-8 border-b border-border">
             <div class="flex items-center gap-4">
                 <a href="<?php echo $templateData['logo_url'] ?>" target="_blank" class="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <?php if ($templateData['logo_image'] || $templateData['logo_image_dark']): ?>
+                    <!-- Light theme logo -->
+                    <?php if ($templateData['logo_image']): ?>
+                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 block dark:hidden">
+                    <?php endif ?>
+                    <!-- Dark theme logo -->
+                    <?php if ($templateData['logo_image_dark']): ?>
+                    <img src="<?php echo $templateData['logo_image_dark'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 hidden dark:block">
+                    <?php elseif ($templateData['logo_image']): ?>
+                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 hidden dark:block">
+                    <?php endif ?>
+                    <?php else: ?>
                     <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -270,6 +282,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                         <h1 class="text-xl font-bold"><?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?></h1>
                         <p class="text-xs text-muted-foreground">Network Diagnostics</p>
                     </div>
+                    <?php endif ?>
                 </a>
             </div>
             <div class="flex items-center gap-3">
@@ -400,7 +413,15 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="md:col-span-2 space-y-2">
-                                <label class="text-sm font-medium text-muted-foreground">Target Host <span class="text-xs text-muted-foreground">(where to send packets from this server)</span></label>
+                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                    Target Host
+                                    <span class="relative group">
+                                        <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs cursor-help border border-border hover:bg-accent">?</span>
+                                        <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50">
+                                            Enter an IP address or hostname where this server will send packets to. Use quick buttons: <strong>My IP</strong> to test route to you, or DNS servers (8.8.8.8, 1.1.1.1) to check connectivity.
+                                        </span>
+                                    </span>
+                                </label>
                                 <div class="flex gap-2">
                                     <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
                                     <div class="flex gap-1">

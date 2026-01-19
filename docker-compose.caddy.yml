@@ -37,6 +37,8 @@ services:
       FACILITY: ${LG_FACILITY:-DataCenter}
       FACILITY_URL: ${LG_FACILITY_URL:-https://www.peeringdb.com/}
       LOGO_URL: ${LG_LOGO_URL:-https://alfahost.io/}
+      LOGO_IMAGE: ${LG_LOGO_IMAGE:-}
+      LOGO_IMAGE_DARK: ${LG_LOGO_IMAGE_DARK:-}
       LOGO: '${LG_LOGO:-<h2>AlfaHost Looking Glass</h2>}'
       LOGO_DARK: '${LG_LOGO_DARK:-<h2>AlfaHost Looking Glass</h2>}'
       IPV4_ADDRESS: ${LG_IPV4}

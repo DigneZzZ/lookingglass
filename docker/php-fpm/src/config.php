@@ -7,8 +7,11 @@ const LG_TITLE = 'Looking Glass';
 // Define a logo, this can be HTML too, see the other example for an image;
 define('LG_LOGO', getenv('LOGO'));
 define('LG_LOGO_DARK', getenv('LOGO_DARK'));
+// Define logo image URLs (optional, if set - will be used instead of LG_LOGO/LG_LOGO_DARK);
+define('LG_LOGO_IMAGE', getenv('LOGO_IMAGE') ?: false);
+define('LG_LOGO_IMAGE_DARK', getenv('LOGO_IMAGE_DARK') ?: false);
  
- // Define the URL where the logo points to;
+// Define the URL where the logo points to;
 define('LG_LOGO_URL', getenv('LOGO_URL'));
 
 // Theme mode;

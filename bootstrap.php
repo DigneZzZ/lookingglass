@@ -45,7 +45,9 @@ $templateData           = [
     'custom_head'              => LG_CUSTOM_HEAD,
     'logo_url'                 => LG_LOGO_URL,
     'logo_data'                => LG_LOGO,
-    'logo_data_dark'                => LG_LOGO_DARK,
+    'logo_data_dark'           => LG_LOGO_DARK,
+    'logo_image'               => defined('LG_LOGO_IMAGE') ? LG_LOGO_IMAGE : false,
+    'logo_image_dark'          => defined('LG_LOGO_IMAGE_DARK') ? LG_LOGO_IMAGE_DARK : false,
     //
     'block_network'            => LG_BLOCK_NETWORK,
     'block_lookingglass'       => LG_BLOCK_LOOKINGGLASS,
