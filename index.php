@@ -95,7 +95,11 @@ if (LG_CHECK_LATENCY) {
     $templateData['latency'] = LookingGlass::getLatency();
 }
 
-$templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(random_bytes(12));
+// Generate CSRF token only if not already set in session
+if (!isset($_SESSION[LookingGlass::SESSION_CSRF])) {
+    $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(random_bytes(12));
+}
+$templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 ?>
 <!doctype html>
 <html lang="en" class="dark">

@@ -11,7 +11,12 @@
  */
 
 require __DIR__.'/LookingGlass.php';
-require __DIR__.'/config.php';
+
+if (file_exists(__DIR__.'/config.php')) {
+    require __DIR__.'/config.php';
+} else {
+    die('config.php is not found');
+}
 
 use Hybula\LookingGlass;
 
