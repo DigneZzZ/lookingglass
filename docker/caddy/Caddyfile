@@ -1,10 +1,9 @@
 {$LG_DOMAIN} {
     encode gzip
     
-    # Serve speedtest files from separate volume
+    # Block direct access to speedtest files - must use download.php
     handle /files/* {
-        root * /srv
-        file_server
+        respond "Access denied. Use the web interface to download test files." 403
     }
     
     # Main application
