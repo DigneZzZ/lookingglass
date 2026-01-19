@@ -186,7 +186,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
     </script>
     <style type="text/tailwindcss">
         :root {
-            --background: 0 0% 100%;
+            --background: 220 20% 97%;
             --foreground: 222.2 84% 4.9%;
             --card: 0 0% 100%;
             --card-foreground: 222.2 84% 4.9%;
@@ -238,8 +238,8 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         .bg-grid {
             background-size: 60px 60px;
             background-image: 
-                linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px),
-                linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px);
+                linear-gradient(to right, hsl(220 20% 88% / 0.8) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(220 20% 88% / 0.8) 1px, transparent 1px);
         }
 
         .dark .bg-grid {
@@ -249,7 +249,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         }
 
         .bg-gradient-radial {
-            background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent);
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.12), transparent);
         }
 
         .dark .bg-gradient-radial {
@@ -438,9 +438,9 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 <body class="min-h-screen bg-grid bg-gradient-radial">
     <!-- Animated background orbs -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse-slow delay-200"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/3 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/10 dark:bg-primary/5 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-400/10 dark:bg-blue-500/5 rounded-full blur-3xl animate-pulse-slow delay-200"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-300/8 dark:bg-indigo-500/3 rounded-full blur-3xl animate-float"></div>
     </div>
 
     <?php echo isset($templateData['custom_header']) ? $templateData['custom_header'] : '' ?>
