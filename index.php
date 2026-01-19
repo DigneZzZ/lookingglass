@@ -1,20 +1,18 @@
 <?php declare(strict_types=1);
 /**
- * Hybula Looking Glass
+ * Hybula Looking Glass - Modern Tailwind/shadcn UI
  *
  * Provides UI and input for the looking glass backend.
  *
  * @copyright 2025 Hybula B.V.
- * * @license Mozilla Public License 2.0
- * * @version 1.3.6
- * * @since File available since release 0.1
- * * @link https://github.com/hybula/lookingglass
+ * @license Mozilla Public License 2.0
+ * @version 1.3.6
+ * @link https://github.com/hybula/lookingglass
  */
 
 require __DIR__.'/bootstrap.php';
 
 use Hybula\LookingGlass;
-
 
 $errorMessage = null;
 if (!empty($_POST)) {
@@ -100,300 +98,529 @@ if (LG_CHECK_LATENCY) {
 $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(random_bytes(12));
 ?>
 <!doctype html>
-<html lang="en" data-bs-theme="<?php if (LG_THEME != 'auto') echo LG_THEME; ?>">
+<html lang="en" class="dark">
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
-    <meta content="" name="description">
-    <meta content="Hybula" name="author">
+    <meta name="description" content="Network Looking Glass - Test network connectivity">
+    <meta name="color-scheme" content="dark light">
     <title><?php echo $templateData['title'] ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: 'hsl(var(--border))',
+                        input: 'hsl(var(--input))',
+                        ring: 'hsl(var(--ring))',
+                        background: 'hsl(var(--background))',
+                        foreground: 'hsl(var(--foreground))',
+                        primary: {
+                            DEFAULT: 'hsl(var(--primary))',
+                            foreground: 'hsl(var(--primary-foreground))',
+                        },
+                        secondary: {
+                            DEFAULT: 'hsl(var(--secondary))',
+                            foreground: 'hsl(var(--secondary-foreground))',
+                        },
+                        destructive: {
+                            DEFAULT: 'hsl(var(--destructive))',
+                            foreground: 'hsl(var(--destructive-foreground))',
+                        },
+                        muted: {
+                            DEFAULT: 'hsl(var(--muted))',
+                            foreground: 'hsl(var(--muted-foreground))',
+                        },
+                        accent: {
+                            DEFAULT: 'hsl(var(--accent))',
+                            foreground: 'hsl(var(--accent-foreground))',
+                        },
+                        card: {
+                            DEFAULT: 'hsl(var(--card))',
+                            foreground: 'hsl(var(--card-foreground))',
+                        },
+                    },
+                    borderRadius: {
+                        lg: 'var(--radius)',
+                        md: 'calc(var(--radius) - 2px)',
+                        sm: 'calc(var(--radius) - 4px)',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96.1%;
+            --secondary-foreground: 222.2 47.4% 11.2%;
+            --muted: 210 40% 96.1%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96.1%;
+            --accent-foreground: 222.2 47.4% 11.2%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.5rem;
+        }
+
+        .dark {
+            --background: 222.2 84% 4.9%;
+            --foreground: 210 40% 98%;
+            --card: 222.2 84% 4.9%;
+            --card-foreground: 210 40% 98%;
+            --primary: 217.2 91.2% 59.8%;
+            --primary-foreground: 222.2 47.4% 11.2%;
+            --secondary: 217.2 32.6% 17.5%;
+            --secondary-foreground: 210 40% 98%;
+            --muted: 217.2 32.6% 17.5%;
+            --muted-foreground: 215 20.2% 65.1%;
+            --accent: 217.2 32.6% 17.5%;
+            --accent-foreground: 210 40% 98%;
+            --destructive: 0 62.8% 30.6%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 217.2 32.6% 17.5%;
+            --input: 217.2 32.6% 17.5%;
+            --ring: 224.3 76.3% 48%;
+        }
+
+        body {
+            @apply bg-background text-foreground antialiased;
+        }
+
+        .card {
+            @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
+        }
+
+        .btn {
+            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+        }
+
+        .btn-primary {
+            @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2;
+        }
+
+        .btn-secondary {
+            @apply bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 h-9 px-4 py-2;
+        }
+
+        .btn-outline {
+            @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2;
+        }
+
+        .btn-ghost {
+            @apply hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2;
+        }
+
+        .input {
+            @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+        }
+
+        .select {
+            @apply flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+        }
+
+        .badge {
+            @apply inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+        }
+
+        .badge-secondary {
+            @apply border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80;
+        }
+
+        .badge-outline {
+            @apply text-foreground;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
     <?php if ($templateData['custom_css']) { echo '<link href="'.$templateData['custom_css'].'" rel="stylesheet">'; } ?>
     <?php if ($templateData['custom_head']) { echo $templateData['custom_head']; } ?>
 </head>
-<body>
+<body class="min-h-screen">
+    <?php echo isset($templateData['custom_header']) ? $templateData['custom_header'] : '' ?>
 
-<?php echo isset($templateData['custom_header']) ? $templateData['custom_header'] : '' ?>
-
-<div class="col-lg-8 mx-auto p-3 py-md-5">
-
-    <header class="d-flex align-items-center pb-3 mb-5 border-bottom">
-            <div class="col-8">
-                <a class="d-flex align-items-center text-primary text-decoration-none color-mode-choice color-mode-light-visible" href="<?php echo $templateData['logo_url'] ?>" target="_blank">
-                    <?php echo $templateData['logo_data'] ?>
-                </a>
-                <a class="d-flex align-items-center text-primary text-decoration-none color-mode-choice color-mode-dark-visible" href="<?php echo $templateData['logo_url'] ?>" target="_blank">
-                    <?php echo $templateData['logo_data_dark'] ?>
+    <div class="container mx-auto max-w-5xl px-4 py-8 md:py-12">
+        <!-- Header -->
+        <header class="flex items-center justify-between pb-6 mb-8 border-b border-border">
+            <div class="flex items-center gap-4">
+                <a href="<?php echo $templateData['logo_url'] ?>" target="_blank" class="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold"><?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?></h1>
+                        <p class="text-xs text-muted-foreground">Network Diagnostics</p>
+                    </div>
                 </a>
             </div>
-            <div class="col-4 float-end">
-                <select class="form-select" onchange="window.location = this.options[this.selectedIndex].value" <?php if (count($templateData['locations']) == 0) echo 'disabled'; ?>>
-                    <option selected><?php echo $templateData['current_location'] ?></option>
-                    <?php foreach ($templateData['locations'] as $location => $link): ?>
-                        <?php if ($location !== $templateData['current_location']): ?>
+            <div class="flex items-center gap-3">
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="btn btn-ghost p-2" title="Toggle theme">
+                    <svg class="w-5 h-5 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <svg class="w-5 h-5 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+                <!-- Location Selector -->
+                <?php if (!empty($templateData['locations'])): ?>
+                <div class="relative">
+                    <select onchange="window.location = this.value" class="select pr-8 min-w-[160px]">
+                        <option value=""><?php echo $templateData['current_location'] ?></option>
+                        <?php foreach ($templateData['locations'] as $location => $link): ?>
+                            <?php if ($location !== $templateData['current_location']): ?>
                             <option value="<?php echo $link ?>"><?php echo $location ?></option>
-                        <?php endif ?>
-                    <?php endforeach ?>
-                </select>
+                            <?php endif ?>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+                <?php endif ?>
             </div>
-    </header>
+        </header>
 
-    <main>
+        <main class="space-y-6">
+            <?php if (LG_BLOCK_NETWORK): ?>
+            <!-- Network Info Card -->
+            <div class="card">
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                        </svg>
+                        <h2 class="text-lg font-semibold">Network Information</h2>
+                    </div>
 
-        <?php if (LG_BLOCK_NETWORK): ?>
-        <div class="row mb-5">
-            <div class="card shadow-lg">
-                <div class="card-body p-3">
-                    <h1 class="fs-4 card-title mb-4">Network</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Location -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-muted-foreground">Location</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="input flex-1" value="<?php echo $templateData['current_location'] ?>" readonly>
+                                <a href="https://www.openstreetmap.org/search?query=<?php echo urlencode($templateData['maps_query']); ?>" target="_blank" class="btn btn-outline" title="View on map">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-7">
-                            <label class="mb-2 text-muted">Location</label>
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" value="<?php echo $templateData['current_location'] ?>" onfocus="this.select()" readonly="">
-                                <a class="btn btn-outline-secondary" href="https://www.openstreetmap.org/search?query=<?php echo urlencode($templateData['maps_query']); ?>" target="_blank">Map</a>
-                                <?php if (!empty($templateData['locations'])): ?>
-                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Locations</button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <?php foreach ($templateData['locations'] as $location => $link): ?>
-                                    <li><a class="dropdown-item" href="<?php echo $link ?>"><?php echo $location ?></a></li>
-                                    <?php endforeach ?>
-                                </ul>
+                        <!-- Facility -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-muted-foreground">Facility</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="input flex-1" value="<?php echo $templateData['facility'] ?>" readonly>
+                                <a href="<?php echo $templateData['facility_url'] ?>" target="_blank" class="btn btn-outline" title="PeeringDB">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Your IP -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-muted-foreground">Your IP</label>
+                            <div class="flex gap-2 items-center">
+                                <input type="text" class="input flex-1" value="<?php echo $templateData['user_ip'] ?>" readonly>
+                                <?php if (LG_CHECK_LATENCY): ?>
+                                <span class="badge badge-secondary" title="Latency to this server">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    <?php echo $templateData['latency'] ?>ms
+                                </span>
                                 <?php endif ?>
                             </div>
                         </div>
-                        <div class="col-md-5">
-                            <label class="mb-2 text-muted">Facility</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" value="<?php echo $templateData['facility'] ?>" onfocus="this.select()" readonly="">
-                                <a href="<?php echo $templateData['facility_url'] ?>" class="btn btn-outline-secondary" target="_blank">PeeringDB</a>
+
+                        <!-- IPv4 -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-muted-foreground">Server IPv4</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="input flex-1 font-mono text-sm" value="<?php echo $templateData['ipv4'] ?>" readonly>
+                                <button class="btn btn-outline" onclick="copyToClipboard('<?php echo $templateData['ipv4'] ?>', this)" title="Copy">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- IPv6 -->
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-medium text-muted-foreground">Server IPv6</label>
+                            <div class="flex gap-2">
+                                <input type="text" class="input flex-1 font-mono text-sm" value="<?php echo $templateData['ipv6'] ?>" readonly>
+                                <button class="btn btn-outline" onclick="copyToClipboard('<?php echo $templateData['ipv6'] ?>', this)" title="Copy">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
-
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <label class="mb-2 text-muted">Looking Glass IPv4</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" value="<?php echo $templateData['ipv4'] ?>" onfocus="this.select()" readonly="">
-                                <button class="btn btn-outline-secondary" onclick="copyToClipboard('<?php echo $templateData['ipv4'] ?>', this)">Copy</button>
-                            </div>
-                        </div>
-                        <div class="col-md-5">
-                            <label class="mb-2 text-muted">Looking Glass IPv6</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" value="<?php echo $templateData['ipv6'] ?>" onfocus="this.select()" readonly="">
-                                <button class="btn btn-outline-secondary" onclick="copyToClipboard('<?php echo $templateData['ipv6'] ?>', this)">Copy</button>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="mb-2 text-muted">Your IP</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" value="<?php echo $templateData['user_ip'] ?>" onfocus="this.select()" readonly="">
-                                <?php if (LG_CHECK_LATENCY): ?><label class="input-group-text" title="Latency between this looking glass and your connection." style="cursor: help;"><small><?php echo $templateData['latency'] ?> MS</small></label><?php endif ?>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div>
-        </div>
-        <?php endif ?>
+            <?php endif ?>
 
-        <?php if (LG_BLOCK_LOOKINGGLASS): ?>
-        <div class="row pb-5">
-            <div class="card shadow-lg">
-                <div class="card-body p-3">
-                    <h1 class="fs-4 card-title mb-4">Looking Glass</h1>
-                    <form method="POST" autocomplete="off">
+            <?php if (LG_BLOCK_LOOKINGGLASS): ?>
+            <!-- Looking Glass Card -->
+            <div class="card">
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h2 class="text-lg font-semibold">Looking Glass</h2>
+                    </div>
+
+                    <form method="POST" autocomplete="off" class="space-y-4">
                         <input type="hidden" name="csrfToken" value="<?php echo $templateData['csrfToken'] ?>">
 
-                        <div class="row">
-                            <div class="col-md-7 mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon1">Target</span>
-                                    <input type="text" class="form-control" placeholder="IP address or host..." name="targetHost" value="<?php echo $templateData['session_target'] ?>" required="">
-                                </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="md:col-span-2 space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground">Target Host</label>
+                                <input type="text" class="input" placeholder="IP address or hostname..." name="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
                             </div>
-                            <div class="col-md-5 mb-3">
-                                <div class="input-group">
-                                    <label class="input-group-text">Method</label>
-                                    <select class="form-select" name="backendMethod" id="backendMethod">
-                                        <?php foreach ($templateData['methods'] as $method): ?>
-                                            <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo $method ?></option>
-                                        <?php endforeach ?>
-                                    </select>
-                                </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted-foreground">Method</label>
+                                <select class="select" name="backendMethod" id="backendMethod">
+                                    <?php foreach ($templateData['methods'] as $method): ?>
+                                    <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo ucfirst($method) ?></option>
+                                    <?php endforeach ?>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center">
+                        <div class="flex items-center justify-between pt-2">
                             <?php if ($templateData['tos']): ?>
-                            <div class="form-check">
-                                <input type="checkbox" id="checkTerms" name="checkTerms" class="form-check-input"<?php echo $templateData['session_tos_checked'] ?>>
-                                <label for="checkTerms" class="form-check-label">I agree with the <a href="<?php echo $templateData['tos'] ?>" target="_blank">Terms of Use</a></label>
-                            </div>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="checkTerms" class="w-4 h-4 rounded border-border"<?php echo $templateData['session_tos_checked'] ?>>
+                                <span>I agree with the <a href="<?php echo $templateData['tos'] ?>" target="_blank" class="text-primary hover:underline">Terms of Use</a></span>
+                            </label>
+                            <?php else: ?>
+                            <div></div>
                             <?php endif ?>
-                            <button type="submit" class="btn btn-primary ms-auto" id="executeButton" name="submitForm">
+                            <button type="submit" class="btn btn-primary gap-2" id="executeButton" name="submitForm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 Execute
                             </button>
                         </div>
 
                         <?php if ($templateData['error_message']): ?>
-                        <div class="alert alert-danger mt-3" role="alert"><?php echo $templateData['error_message'] ?></div>
+                        <div class="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-sm"><?php echo $templateData['error_message'] ?></span>
+                        </div>
                         <?php endif ?>
 
-                        <div class="card card-body bg-dark text-light mt-4" style="display: none;" id="outputCard">
-                            <pre id="outputContent" style="white-space: pre;word-wrap: normal;margin-bottom: 0;padding-bottom: 1rem;"></pre>
+                        <div class="hidden" id="outputCard">
+                            <div class="rounded-lg bg-zinc-950 border border-zinc-800 p-4 mt-4">
+                                <div class="flex items-center gap-2 mb-3 pb-3 border-b border-zinc-800">
+                                    <div class="flex gap-1.5">
+                                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                                    </div>
+                                    <span class="text-xs text-zinc-500 ml-2">Terminal Output</span>
+                                </div>
+                                <pre id="outputContent" class="font-mono text-sm text-green-400 whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto"></pre>
+                            </div>
                         </div>
                     </form>
-
                 </div>
             </div>
-        </div>
-        <?php endif ?>
+            <?php endif ?>
 
-        <?php if (LG_BLOCK_SPEEDTEST): ?>
-        <div class="row pb-5">
-            <div class="card shadow-lg">
-                <div class="card-body p-3">
-                    <h1 class="fs-4 card-title mb-4">Speedtest</h1>
+            <?php if (LG_BLOCK_SPEEDTEST): ?>
+            <!-- Speedtest Card -->
+            <div class="card">
+                <div class="p-6">
+                    <div class="flex items-center gap-2 mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <h2 class="text-lg font-semibold">Speed Test</h2>
+                    </div>
 
                     <?php if ($templateData['speedtest_iperf']): ?>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="mb-2 text-muted"><?php echo $templateData['speedtest_incoming_label'] ?></label>
-                            <p><code><?php echo $templateData['speedtest_incoming_cmd']; ?></code></p>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('<?php echo $templateData['speedtest_incoming_cmd'] ?>', this)">Copy</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                                </svg>
+                                <label class="text-sm font-medium"><?php echo $templateData['speedtest_incoming_label'] ?></label>
+                            </div>
+                            <div class="flex gap-2">
+                                <code class="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-xs break-all"><?php echo $templateData['speedtest_incoming_cmd']; ?></code>
+                                <button class="btn btn-outline" onclick="copyToClipboard('<?php echo $templateData['speedtest_incoming_cmd'] ?>', this)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="mb-2 text-muted"><?php echo $templateData['speedtest_outgoing_label'] ?></label>
-                            <p><code><?php echo $templateData['speedtest_outgoing_cmd'] ?></code></p>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('<?php echo $templateData['speedtest_outgoing_cmd'] ?>', this)">Copy</button>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                                <label class="text-sm font-medium"><?php echo $templateData['speedtest_outgoing_label'] ?></label>
+                            </div>
+                            <div class="flex gap-2">
+                                <code class="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-xs break-all"><?php echo $templateData['speedtest_outgoing_cmd'] ?></code>
+                                <button class="btn btn-outline" onclick="copyToClipboard('<?php echo $templateData['speedtest_outgoing_cmd'] ?>', this)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <?php endif ?>
-    
+
                     <?php if (count($templateData['speedtest_files'])): ?>
-                    <div class="row">
-                        <label class="mb-2 text-muted">Test Files</label>
-                        <div class="btn-group input-group mb-3">
+                    <div class="space-y-3">
+                        <label class="text-sm font-medium text-muted-foreground">Download Test Files</label>
+                        <div class="flex flex-wrap gap-2">
                             <?php foreach ($templateData['speedtest_files'] as $file => $link): ?>
-                                <a href="<?php echo $link ?>" class="btn btn-outline-secondary"><?php echo $file ?></a>
+                            <a href="<?php echo $link ?>" class="btn btn-secondary gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <?php echo $file ?>
+                            </a>
                             <?php endforeach ?>
                         </div>
                     </div>
                     <?php endif ?>
-
                 </div>
             </div>
-        </div>
-        <?php endif ?>
+            <?php endif ?>
 
-        <?php echo $templateData['custom_html'] ?>
+            <?php echo $templateData['custom_html'] ?? '' ?>
+        </main>
 
-    </main>
-    <footer class="pt-3 mt-5 my-5 text-muted border-top">
-        Powered by <a href="https://github.com/hybula/lookingglass" target="_blank">Hybula Looking Glass</a>
-        <a href="https://github.com/hybula/lookingglass" target="_blank" class="float-end"><img src="https://img.shields.io/github/stars/hybula/lookingglass?style=social" alt="GitHub"></a>
-    </footer>
-</div>
+        <!-- Footer -->
+        <footer class="pt-6 mt-12 border-t border-border">
+            <div class="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Powered by <a href="https://github.com/hybula/lookingglass" target="_blank" class="text-primary hover:underline">Hybula Looking Glass</a></span>
+                <a href="https://github.com/hybula/lookingglass" target="_blank" class="hover:opacity-80 transition-opacity">
+                    <img src="https://img.shields.io/github/stars/hybula/lookingglass?style=social" alt="GitHub Stars">
+                </a>
+            </div>
+        </footer>
+    </div>
 
-<script type="text/javascript">
-    function setThemeClass() {
-        const colorMode = document.querySelector("html").getAttribute("data-bs-theme");
-        const allDivs = document.querySelectorAll('.color-mode-choice')
-        allDivs.forEach((div) => {
-            div.classList.add('d-none')
-            if (div.matches('.color-mode-' + colorMode + '-visible')){
-                div.classList.remove('d-none')
+    <?php echo isset($templateData['custom_footer']) ? $templateData['custom_footer'] : '' ?>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // Check saved theme or system preference
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'light' || (!savedTheme && !systemDark)) {
+            html.classList.remove('dark');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+        });
+
+        // Copy to clipboard
+        async function copyToClipboard(text, button) {
+            if (!navigator?.clipboard?.writeText) {
+                return Promise.reject('Clipboard API not available');
             }
-        })
-    };
-    setThemeClass();
-</script>
+            
+            const originalHtml = button.innerHTML;
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>';
+            await navigator.clipboard.writeText(text);
+            await new Promise(r => setTimeout(r, 1500));
+            button.innerHTML = originalHtml;
+        }
+    </script>
 
-<?php if (LG_THEME == 'auto'): ?>
-<script type="text/javascript">
-    function updateThemeHelper() {
-        const colorMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        document.querySelector("html").setAttribute("data-bs-theme", colorMode);
-        setThemeClass();
-    }
-    updateThemeHelper();
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeHelper);
-</script>
-<?php endif ?>
+    <?php if ($templateData['session_call_backend']): ?>
+    <script>
+        (function () {
+            const outputContent = document.getElementById('outputContent');
+            const executeButton = document.getElementById('executeButton');
+            const outputCard = document.getElementById('outputCard');
 
-<?php echo isset($templateData['custom_footer']) ? $templateData['custom_footer'] : '' ?>
+            executeButton.innerHTML = '<svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Executing...';
+            executeButton.disabled = true;
+            executeButton.classList.add('opacity-70');
 
-<?php if ($templateData['session_call_backend']): ?>
-<script type="text/javascript">
-    (function () {
-        const outputContent = document.getElementById('outputContent')
-        const executeButton = document.getElementById('executeButton')
-        const outputCard = document.getElementById('outputCard')
+            outputCard.classList.remove('hidden');
 
-        executeButton.innerText = 'Executing...'
-        executeButton.disabled = true
+            fetch('backend.php')
+                .then(async (response) => {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
 
-        outputCard.style.display = 'inherit'
-
-        fetch('backend.php')
-            .then(async (response) => {
-                // response.body is a ReadableStream
-                const reader = response.body.getReader()
-                const decoder = new TextDecoder()
-
-                for await (const chunk of readChunks(reader)) {
-                    const text = decoder.decode(chunk)
-                    <?php if(in_array($_SESSION[LookingGlass::SESSION_TARGET_METHOD], [LookingGlass::METHOD_MTR, LookingGlass::METHOD_MTR6])): ?>
-                    let splittedText = text.split('@@@')
-                    if (!splittedText[1]) {
-                        continue
+                    for await (const chunk of readChunks(reader)) {
+                        const text = decoder.decode(chunk);
+                        <?php if(in_array($_SESSION[LookingGlass::SESSION_TARGET_METHOD], [LookingGlass::METHOD_MTR, LookingGlass::METHOD_MTR6])): ?>
+                        let splittedText = text.split('@@@');
+                        if (!splittedText[1]) continue;
+                        outputContent.innerHTML = splittedText[1].trim();
+                        <?php else: ?>
+                        outputContent.innerHTML = outputContent.innerHTML + text.trim().replace(/<br \/> +/g, '<br />');
+                        <?php endif ?>
                     }
-                    outputContent.innerHTML = splittedText[1].trim()
-                    <?php else: ?>
-                    outputContent.innerHTML = outputContent.innerHTML + text.trim().replace(/<br \/> +/g, '<br />')
-                    <?php endif ?>
-                }
-            })
-            .finally(() => {
-                executeButton.innerText = 'Execute'
-                executeButton.disabled = false
-                console.log('Backend ready!')
-            })
-    })()
+                })
+                .finally(() => {
+                    executeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Execute';
+                    executeButton.disabled = false;
+                    executeButton.classList.remove('opacity-70');
+                });
+        })();
 
-    // readChunks() reads from the provided reader and yields the results into an async iterable
-    function readChunks(reader) {
-        return {
-            async* [Symbol.asyncIterator]() {
-                let readResult = await reader.read()
-                while (!readResult.done) {
-                    yield readResult.value
-                    readResult = await reader.read()
-                }
-            },
+        function readChunks(reader) {
+            return {
+                async* [Symbol.asyncIterator]() {
+                    let readResult = await reader.read();
+                    while (!readResult.done) {
+                        yield readResult.value;
+                        readResult = await reader.read();
+                    }
+                },
+            };
         }
-    }
-</script>
-<?php endif ?>
-
-<script type="text/javascript">
-    async function copyToClipboard(text, button) {
-        if (!navigator || !navigator.clipboard || !navigator.clipboard.writeText) {
-            return Promise.reject('The Clipboard API is not available.')
-        }
-
-        button.innerHTML = 'Copied!'
-        await navigator.clipboard.writeText(text)
-        await new Promise(r => setTimeout(r, 2000))
-        button.innerHTML = 'Copy'
-    }
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
-
+    </script>
+    <?php endif ?>
 </body>
 </html>

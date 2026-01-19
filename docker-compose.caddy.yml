@@ -1,0 +1,64 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: lg-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./:/var/www/html:ro
+    environment:
+      LG_DOMAIN: ${LG_DOMAIN}
+      LG_EMAIL: ${LG_EMAIL}
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    image: hybula/lookingglass-php:1
+    container_name: lg-php
+    build:
+      context: .
+      dockerfile: docker/php-fpm/Dockerfile
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "cgi-fcgi -bind -connect localhost:9000 >/dev/null 2>&1 || exit 1"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    environment:
+      # Основные настройки
+      LOCATION: ${CURRENT_LOCATION}
+      FACILITY: ${LG_FACILITY:-DataCenter}
+      FACILITY_URL: ${LG_FACILITY_URL:-https://www.peeringdb.com/}
+      LOGO_URL: ${LG_LOGO_URL:-https://alfahost.io/}
+      LOGO: ${LG_LOGO:-<h2 style="color: #000000;">AlfaHost Looking Glass</h2>}
+      LOGO_DARK: ${LG_LOGO_DARK:-<h2 style="color: #ffffff;">AlfaHost Looking Glass</h2>}
+      IPV4_ADDRESS: ${LG_IPV4}
+      IPV6_ADDRESS: ${LG_IPV6:-::1}
+      MAPS_QUERY: ${LG_MAPS_QUERY:-${CURRENT_LOCATION}}
+      
+      # Мультилокации: формат "Name1|URL1,Name2|URL2"
+      LG_LOCATIONS: ${LG_LOCATIONS}
+
+  iperf3:
+    image: networkstatic/iperf3:latest
+    container_name: lg-iperf3
+    restart: unless-stopped
+    ports:
+      - "5201:5201"
+      - "5201:5201/udp"
+    # Защита от злоупотреблений (без влияния на производительность)
+    command: >
+      -s
+      --one-off
+      --idle-timeout 30
+
+volumes:
+  caddy_data:
+  caddy_config:

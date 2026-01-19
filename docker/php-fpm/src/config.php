@@ -63,11 +63,18 @@ const LG_METHODS = [
 ];
 
 // Define other looking glasses, this is useful if you have multiple networks and looking glasses;
-const LG_LOCATIONS = [
-    'Location A' => 'https://github.com/hybula/lookingglass/',
-    'Location B' => 'https://github.com/hybula/lookingglass/',
-    'Location C' => 'https://github.com/hybula/lookingglass/',
-];
+// Format: "Location1|https://url1,Location2|https://url2"
+$locationsEnv = getenv('LG_LOCATIONS');
+$parsedLocations = [];
+if ($locationsEnv) {
+    foreach (explode(',', $locationsEnv) as $item) {
+        $parts = explode('|', trim($item));
+        if (count($parts) === 2) {
+            $parsedLocations[trim($parts[0])] = trim($parts[1]);
+        }
+    }
+}
+define('LG_LOCATIONS', $parsedLocations);
 
 // Enable the iPerf info inside the speedtest block, set to false to disable;
 const LG_SPEEDTEST_IPERF = true;
