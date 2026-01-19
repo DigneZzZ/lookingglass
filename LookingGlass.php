@@ -222,6 +222,154 @@ class LookingGlass
     }
 
     /**
+     * Get network information (ASN, prefixes, etc.) for an IP address.
+     * Uses bgpview.io API with file-based caching (24 hours).
+     *
+     * @param string $ip The IP address to lookup.
+     * @return array|null Network information or null on failure.
+     */
+    public static function getNetworkInfo(string $ip): ?array
+    {
+        // Validate IP
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+            return null;
+        }
+
+        // Cache file path
+        $cacheDir = sys_get_temp_dir() . '/lookingglass_cache';
+        $cacheFile = $cacheDir . '/network_' . md5($ip) . '.json';
+        $cacheTime = 86400; // 24 hours
+
+        // Check cache
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTime) {
+            $cached = file_get_contents($cacheFile);
+            if ($cached !== false) {
+                $data = json_decode($cached, true);
+                if ($data !== null) {
+                    return $data;
+                }
+            }
+        }
+
+        // Fetch from bgpview.io API
+        $result = self::fetchNetworkInfoFromAPI($ip);
+        
+        // Cache result
+        if ($result !== null) {
+            if (!is_dir($cacheDir)) {
+                @mkdir($cacheDir, 0755, true);
+            }
+            @file_put_contents($cacheFile, json_encode($result));
+        }
+
+        return $result;
+    }
+
+    /**
+     * Fetch network information from bgpview.io API.
+     *
+     * @param string $ip The IP address to lookup.
+     * @return array|null Network information or null on failure.
+     */
+    private static function fetchNetworkInfoFromAPI(string $ip): ?array
+    {
+        $context = stream_context_create([
+            'http' => [
+                'timeout' => 10,
+                'header' => 'User-Agent: LookingGlass/2.0'
+            ]
+        ]);
+
+        // Step 1: Get ASN for IP
+        $prefixUrl = 'https://api.bgpview.io/ip/' . urlencode($ip);
+        $prefixResponse = @file_get_contents($prefixUrl, false, $context);
+        
+        if ($prefixResponse === false) {
+            return null;
+        }
+
+        $prefixData = json_decode($prefixResponse, true);
+        if (!isset($prefixData['data']['prefixes'][0]['asn']['asn'])) {
+            return null;
+        }
+
+        $asn = $prefixData['data']['prefixes'][0]['asn']['asn'];
+        $asnName = $prefixData['data']['prefixes'][0]['asn']['name'] ?? '';
+        $asnDescription = $prefixData['data']['prefixes'][0]['asn']['description'] ?? '';
+
+        // Step 2: Get ASN details (prefixes, etc.)
+        $asnUrl = 'https://api.bgpview.io/asn/' . $asn;
+        $asnResponse = @file_get_contents($asnUrl, false, $context);
+        
+        $countryCode = '';
+        $rir = '';
+        $website = '';
+        
+        if ($asnResponse !== false) {
+            $asnData = json_decode($asnResponse, true);
+            if (isset($asnData['data'])) {
+                $countryCode = $asnData['data']['country_code'] ?? '';
+                $rir = $asnData['data']['rir_allocation']['rir_name'] ?? '';
+                $website = $asnData['data']['website'] ?? '';
+            }
+        }
+
+        // Step 3: Get prefixes for ASN
+        $prefixesUrl = 'https://api.bgpview.io/asn/' . $asn . '/prefixes';
+        $prefixesResponse = @file_get_contents($prefixesUrl, false, $context);
+        
+        $prefixesV4 = [];
+        $prefixesV6 = [];
+        
+        if ($prefixesResponse !== false) {
+            $prefixesData = json_decode($prefixesResponse, true);
+            if (isset($prefixesData['data'])) {
+                // Get IPv4 prefixes (limit to 10)
+                if (isset($prefixesData['data']['ipv4_prefixes'])) {
+                    foreach (array_slice($prefixesData['data']['ipv4_prefixes'], 0, 10) as $prefix) {
+                        $prefixesV4[] = $prefix['prefix'];
+                    }
+                }
+                // Get IPv6 prefixes (limit to 5)
+                if (isset($prefixesData['data']['ipv6_prefixes'])) {
+                    foreach (array_slice($prefixesData['data']['ipv6_prefixes'], 0, 5) as $prefix) {
+                        $prefixesV6[] = $prefix['prefix'];
+                    }
+                }
+            }
+        }
+
+        // Step 4: Get IX (Internet Exchanges) for ASN
+        $ixUrl = 'https://api.bgpview.io/asn/' . $asn . '/ixs';
+        $ixResponse = @file_get_contents($ixUrl, false, $context);
+        
+        $ixList = [];
+        
+        if ($ixResponse !== false) {
+            $ixData = json_decode($ixResponse, true);
+            if (isset($ixData['data'])) {
+                foreach (array_slice($ixData['data'], 0, 10) as $ix) {
+                    $ixList[] = $ix['name'] ?? $ix['name_full'] ?? '';
+                }
+                $ixList = array_filter($ixList);
+            }
+        }
+
+        return [
+            'asn' => 'AS' . $asn,
+            'asn_name' => $asnName ?: $asnDescription,
+            'country_code' => $countryCode,
+            'rir' => $rir,
+            'website' => $website,
+            'prefixes_v4' => $prefixesV4,
+            'prefixes_v6' => $prefixesV6,
+            'ix_list' => $ixList,
+            'peeringdb' => 'https://www.peeringdb.com/asn/' . $asn,
+            'fetched_at' => time()
+        ];
+    }
+
+    /**
      * Executes a ping command.
      *
      * @param  string  $host  The target host.

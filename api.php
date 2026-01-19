@@ -89,6 +89,30 @@ if (in_array($method, ['ping6', 'mtr6', 'traceroute6'])) {
     }
 }
 
+// WHOIS validation - accepts IP, domain, or ASN
+if ($method === 'whois') {
+    $validatedTarget = trim($target);
+    if (!preg_match('/^[a-zA-Z0-9.:\/\-]+$/', $validatedTarget)) {
+        http_response_code(400);
+        echo 'Invalid WHOIS target. Use IP, domain, or ASN (e.g., AS15169).';
+        exit;
+    }
+}
+
+// BGP validation - accepts IP, prefix, or ASN
+if ($method === 'bgp') {
+    $validatedTarget = trim($target);
+    $isValidBGP = filter_var($validatedTarget, FILTER_VALIDATE_IP) ||
+                  preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/', $validatedTarget) ||
+                  preg_match('/^[0-9a-fA-F:]+\/\d{1,3}$/', $validatedTarget) ||
+                  preg_match('/^AS?\d+$/i', $validatedTarget);
+    if (!$isValidBGP) {
+        http_response_code(400);
+        echo 'Invalid BGP target. Use IP, prefix (x.x.x.x/xx), or ASN (AS15169).';
+        exit;
+    }
+}
+
 // Store for session (optional, for compatibility)
 $_SESSION[LookingGlass::SESSION_TARGET_HOST] = $validatedTarget;
 $_SESSION[LookingGlass::SESSION_TARGET_METHOD] = $method;
@@ -112,5 +136,11 @@ switch ($method) {
         break;
     case LookingGlass::METHOD_TRACEROUTE6:
         LookingGlass::traceroute6($validatedTarget);
+        break;
+    case LookingGlass::METHOD_WHOIS:
+        LookingGlass::whois($validatedTarget);
+        break;
+    case LookingGlass::METHOD_BGP:
+        LookingGlass::bgp($validatedTarget);
         break;
 }

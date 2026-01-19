@@ -617,19 +617,14 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                                     Target Host
                                     <span class="relative group">
                                         <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs cursor-help border border-border hover:bg-accent transition-colors">?</span>
-                                        <span class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-card text-card-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-72 z-50" id="targetHelpTooltip">
-                                            <strong>Network tools (Ping, MTR, Traceroute):</strong><br>
-                                            Enter IP address or hostname.<br><br>
-                                            <strong>WHOIS:</strong><br>
-                                            IP, domain, or ASN (e.g., AS15169).<br><br>
-                                            <strong>BGP Route:</strong><br>
-                                            IP, prefix (8.8.8.0/24), or ASN.
+                                        <span class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-card text-card-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50">
+                                            Enter an IP address or hostname where this server will send packets to. Use quick buttons: <strong>My IP</strong> to test route to you, or DNS servers (8.8.8.8, 1.1.1.1) to check connectivity.
                                         </span>
                                     </span>
                                 </label>
                                 <div class="flex flex-col sm:flex-row gap-2">
                                     <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo htmlspecialchars($templateData['session_target']) ?>" required>
-                                    <div class="flex gap-1 flex-wrap" id="quickButtons">
+                                    <div class="flex gap-1 flex-wrap">
                                         <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('<?php echo $templateData['user_ip'] ?>')" title="Test route to your IP">
                                             My IP
                                         </button>
@@ -644,7 +639,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs sm:text-sm font-medium text-muted-foreground">Method</label>
-                                <select class="select" id="backendMethod" onchange="updatePlaceholder()">
+                                <select class="select" id="backendMethod">
                                     <?php foreach ($templateData['methods'] as $method): ?>
                                     <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo ucfirst($method) ?></option>
                                     <?php endforeach ?>
@@ -697,6 +692,100 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             </div>
             <?php endif ?>
 
+            <?php if (!empty($templateData['network_info'])): ?>
+            <?php $netInfo = $templateData['network_info']; ?>
+            <!-- Network Details Card -->
+            <div class="card animate-slide-up delay-150">
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center gap-2 mb-4 sm:mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base sm:text-lg font-semibold">Network Details</h2>
+                        <?php if (!empty($netInfo['fetched_at'])): ?>
+                        <span class="ml-auto text-[10px] text-muted-foreground" title="Data cached from bgpview.io">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <?php echo date('Y-m-d H:i', $netInfo['fetched_at']); ?>
+                        </span>
+                        <?php endif ?>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- ASN -->
+                        <div class="space-y-2">
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">Autonomous System</label>
+                            <div class="flex gap-2">
+                                <div class="flex-1 px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+                                    <span class="font-mono text-sm font-semibold text-primary"><?php echo htmlspecialchars($netInfo['asn']) ?></span>
+                                    <?php if (!empty($netInfo['asn_name'])): ?>
+                                    <span class="text-sm text-muted-foreground ml-2"><?php echo htmlspecialchars($netInfo['asn_name']) ?></span>
+                                    <?php endif ?>
+                                </div>
+                                <?php if (!empty($netInfo['peeringdb'])): ?>
+                                <a href="<?php echo htmlspecialchars($netInfo['peeringdb']) ?>" target="_blank" class="btn btn-outline shrink-0" title="View on PeeringDB">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                                <?php endif ?>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($netInfo['prefixes_v4'])): ?>
+                        <!-- IPv4 Prefixes -->
+                        <div class="space-y-2">
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">IPv4 Prefixes</label>
+                            <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+                                <div class="flex flex-wrap gap-1">
+                                    <?php foreach ($netInfo['prefixes_v4'] as $prefix): ?>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-mono"><?php echo htmlspecialchars($prefix) ?></span>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif ?>
+
+                        <?php if (!empty($netInfo['prefixes_v6'])): ?>
+                        <!-- IPv6 Prefixes -->
+                        <div class="space-y-2">
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">IPv6 Prefixes</label>
+                            <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+                                <div class="flex flex-wrap gap-1">
+                                    <?php foreach ($netInfo['prefixes_v6'] as $prefix): ?>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-mono"><?php echo htmlspecialchars($prefix) ?></span>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif ?>
+
+                        <?php if (!empty($netInfo['ix_list'])): ?>
+                        <!-- Internet Exchanges -->
+                        <div class="space-y-2 sm:col-span-2 lg:col-span-3">
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">Internet Exchanges</label>
+                            <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+                                <div class="flex flex-wrap gap-2">
+                                    <?php foreach ($netInfo['ix_list'] as $ix): ?>
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <?php echo htmlspecialchars($ix) ?>
+                                    </span>
+                                    <?php endforeach ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif ?>
+
             <?php if (LG_BLOCK_SPEEDTEST): ?>
             <!-- Speedtest Card -->
             <div class="card animate-slide-up delay-200">
@@ -711,6 +800,26 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                     </div>
 
                     <?php if ($templateData['speedtest_iperf']): ?>
+                    <!-- iPerf3 Help -->
+                    <div class="mb-4 p-3 rounded-lg bg-muted/30 border border-border/50">
+                        <div class="flex items-start gap-2">
+                            <span class="text-primary mt-0.5">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </span>
+                            <div class="text-xs text-muted-foreground space-y-1">
+                                <p class="font-medium text-foreground">iPerf3 Options:</p>
+                                <p><code class="px-1 py-0.5 bg-muted rounded text-[10px]">-c</code> client mode &nbsp;
+                                   <code class="px-1 py-0.5 bg-muted rounded text-[10px]">-p</code> port (5201) &nbsp;
+                                   <code class="px-1 py-0.5 bg-muted rounded text-[10px]">-P</code> parallel streams &nbsp;
+                                   <code class="px-1 py-0.5 bg-muted rounded text-[10px]">-R</code> reverse (download) &nbsp;
+                                   <code class="px-1 py-0.5 bg-muted rounded text-[10px]">-t</code> duration (sec)</p>
+                                <p class="text-[10px] opacity-75">Server accepts one connection at a time (--one-off mode for security)</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                         <div class="space-y-3">
                             <div class="flex items-center gap-2">
@@ -718,6 +827,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                                 </svg>
                                 <label class="text-xs sm:text-sm font-medium"><?php echo $templateData['speedtest_incoming_label'] ?></label>
+                                <span class="text-[10px] text-muted-foreground">(upload to server)</span>
                             </div>
                             <div class="flex gap-2">
                                 <code class="flex-1 px-3 py-2 rounded-lg bg-muted/50 font-mono text-xs break-all border border-border/50"><?php echo $templateData['speedtest_incoming_cmd']; ?></code>
@@ -734,6 +844,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
                                 <label class="text-sm font-medium"><?php echo $templateData['speedtest_outgoing_label'] ?></label>
+                                <span class="text-[10px] text-muted-foreground">(download from server)</span>
                             </div>
                             <div class="flex gap-2">
                                 <code class="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-xs break-all"><?php echo $templateData['speedtest_outgoing_cmd'] ?></code>
@@ -803,49 +914,6 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             html.classList.toggle('dark');
             localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
         });
-
-        // User IP for quick buttons
-        const userIP = '<?php echo $templateData['user_ip'] ?>';
-
-        // Quick button templates for different methods
-        const quickButtonsNetwork = `
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('${userIP}')" title="Test route to your IP">My IP</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('8.8.8.8')" title="Google DNS">8.8.8.8</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('1.1.1.1')" title="Cloudflare DNS">1.1.1.1</button>
-        `;
-        
-        const quickButtonsWhois = `
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('${userIP}')" title="Your IP">My IP</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS15169')" title="Google ASN">AS15169</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS13335')" title="Cloudflare ASN">AS13335</button>
-        `;
-        
-        const quickButtonsBGP = `
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('8.8.8.0/24')" title="Google DNS prefix">8.8.8.0/24</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('1.1.1.0/24')" title="Cloudflare prefix">1.1.1.0/24</button>
-            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS15169')" title="Google ASN">AS15169</button>
-        `;
-
-        // Update placeholder and quick buttons based on selected method
-        function updatePlaceholder() {
-            const method = document.getElementById('backendMethod').value;
-            const targetInput = document.getElementById('targetHost');
-            const quickButtonsDiv = document.getElementById('quickButtons');
-            
-            if (method === 'whois') {
-                targetInput.placeholder = 'IP, domain, or ASN (e.g., AS15169)...';
-                quickButtonsDiv.innerHTML = quickButtonsWhois;
-            } else if (method === 'bgp') {
-                targetInput.placeholder = 'IP, prefix (8.8.8.0/24), or ASN...';
-                quickButtonsDiv.innerHTML = quickButtonsBGP;
-            } else {
-                targetInput.placeholder = 'IP address or hostname...';
-                quickButtonsDiv.innerHTML = quickButtonsNetwork;
-            }
-        }
-
-        // Initialize placeholder on page load
-        updatePlaceholder();
 
         // Set target host from quick buttons
         function setTarget(ip) {

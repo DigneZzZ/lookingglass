@@ -56,6 +56,38 @@ define('LG_IPV4', getenv('IPV4_ADDRESS'));
 define('LG_IPV6', getenv('IPV6_ADDRESS'));
 
 // ============================================================================
+// Network Details Block (optional)
+// ============================================================================
+// 
+// Show a block with your network information (ASN, prefixes, peering, etc.)
+// 
+// By default, network info is fetched DYNAMICALLY from bgpview.io API
+// based on the server's IPv4 address. Data is cached for 24 hours.
+// 
+// You can disable dynamic fetching and use static ENV values instead
+// by setting LG_NETWORK_INFO_DYNAMIC=false
+// ============================================================================
+
+// Enable/disable dynamic network info fetching (default: true)
+// If true: fetches ASN, prefixes, IXs automatically from bgpview.io API
+// If false: uses LG_ASN and other static ENV values below
+define('LG_NETWORK_INFO_DYNAMIC', getenv('LG_NETWORK_INFO_DYNAMIC') !== 'false');
+
+// --- Static fallback values (used when dynamic=false or API fails) ---
+// Your Autonomous System Number (e.g., "AS12345" or just "12345")
+define('LG_ASN', getenv('LG_ASN') ?: false);
+// Your organization/company name
+define('LG_ASN_NAME', getenv('LG_ASN_NAME') ?: '');
+// Your announced IPv4 prefixes (comma-separated, e.g., "1.2.3.0/24, 5.6.0.0/16")
+define('LG_PREFIXES_V4', getenv('LG_PREFIXES_V4') ?: '');
+// Your announced IPv6 prefixes (comma-separated)
+define('LG_PREFIXES_V6', getenv('LG_PREFIXES_V6') ?: '');
+// PeeringDB link (e.g., "https://www.peeringdb.com/asn/12345")
+define('LG_PEERINGDB', getenv('LG_PEERINGDB') ?: '');
+// Internet Exchanges list (comma-separated, e.g., "AMS-IX, DE-CIX, LINX")
+define('LG_IX_LIST', getenv('LG_IX_LIST') ?: '');
+
+// ============================================================================
 // Available Methods
 // ============================================================================
 // 
@@ -78,8 +110,6 @@ const LG_METHODS = [
     LookingGlass::METHOD_MTR6,
     LookingGlass::METHOD_TRACEROUTE,
     LookingGlass::METHOD_TRACEROUTE6,
-    LookingGlass::METHOD_WHOIS,
-    LookingGlass::METHOD_BGP,
 ];
 
 // Define other looking glasses, this is useful if you have multiple networks and looking glasses;

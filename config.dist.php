@@ -75,8 +75,6 @@ const LG_METHODS = [
     LookingGlass::METHOD_MTR6,
     LookingGlass::METHOD_TRACEROUTE,
     LookingGlass::METHOD_TRACEROUTE6,
-    LookingGlass::METHOD_WHOIS,
-    LookingGlass::METHOD_BGP,
 ];
 
 // Define other looking glasses, this is useful if you have multiple networks and looking glasses;
@@ -105,3 +103,32 @@ const LG_SPEEDTEST_FILES = [
 
 // Define if you require visitors to agree with the Terms of Use. The value should be a link to the terms, or false to disable it completely.
 const LG_TERMS = false;
+
+// ============================================================================
+// Network Details Block (optional)
+// ============================================================================
+// 
+// Show a block with your network information (ASN, prefixes, peering, etc.)
+// 
+// By default, network info is fetched DYNAMICALLY from bgpview.io API
+// based on the server's IPv4 address. Data is cached for 24 hours.
+// 
+// Set LG_NETWORK_INFO_DYNAMIC = false to use static values below
+// ============================================================================
+
+// Enable/disable dynamic network info fetching (default: true)
+const LG_NETWORK_INFO_DYNAMIC = true;
+
+// --- Static fallback values (used when dynamic=false or API fails) ---
+// Your Autonomous System Number (e.g., "AS12345" or just "12345")
+const LG_ASN = false; // Set to your ASN to enable this block
+// Your organization/company name
+const LG_ASN_NAME = '';
+// Your announced IPv4 prefixes (comma-separated, e.g., "1.2.3.0/24, 5.6.0.0/16")
+const LG_PREFIXES_V4 = '';
+// Your announced IPv6 prefixes (comma-separated)
+const LG_PREFIXES_V6 = '';
+// PeeringDB link (e.g., "https://www.peeringdb.com/asn/12345")
+const LG_PEERINGDB = '';
+// Internet Exchanges list (comma-separated, e.g., "AMS-IX, DE-CIX, LINX")
+const LG_IX_LIST = '';

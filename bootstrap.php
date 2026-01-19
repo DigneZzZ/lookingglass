@@ -65,6 +65,8 @@ $templateData           = [
     'methods'                  => LG_METHODS,
     'user_ip'                  => LookingGlass::detectIpAddress(),
     //
+    'network_info'             => null, // Will be populated below if enabled
+    //
     'speedtest_iperf'          => LG_SPEEDTEST_IPERF,
     'speedtest_incoming_label' => LG_SPEEDTEST_LABEL_INCOMING,
     'speedtest_incoming_cmd'   => LG_SPEEDTEST_CMD_INCOMING,
@@ -75,3 +77,28 @@ $templateData           = [
     'tos'                      => LG_TERMS,
     'error_message'            => false,
 ];
+
+// Network Details: try dynamic fetch, fallback to static ENV
+$networkInfo = null;
+
+// Check if dynamic network info is enabled (LG_NETWORK_INFO_DYNAMIC=true or not set)
+$dynamicEnabled = !defined('LG_NETWORK_INFO_DYNAMIC') || LG_NETWORK_INFO_DYNAMIC !== false;
+
+if ($dynamicEnabled && !empty(LG_IPV4) && LG_IPV4 !== '127.0.0.1') {
+    // Try to get dynamic network info from API
+    $networkInfo = LookingGlass::getNetworkInfo(LG_IPV4);
+}
+
+// Fallback to static ENV if dynamic failed or disabled
+if ($networkInfo === null && defined('LG_ASN') && LG_ASN) {
+    $networkInfo = [
+        'asn' => LG_ASN,
+        'asn_name' => defined('LG_ASN_NAME') ? LG_ASN_NAME : '',
+        'prefixes_v4' => defined('LG_PREFIXES_V4') && LG_PREFIXES_V4 ? explode(',', LG_PREFIXES_V4) : [],
+        'prefixes_v6' => defined('LG_PREFIXES_V6') && LG_PREFIXES_V6 ? explode(',', LG_PREFIXES_V6) : [],
+        'peeringdb' => defined('LG_PEERINGDB') ? LG_PEERINGDB : '',
+        'ix_list' => defined('LG_IX_LIST') && LG_IX_LIST ? explode(',', LG_IX_LIST) : [],
+    ];
+}
+
+$templateData['network_info'] = $networkInfo;
