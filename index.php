@@ -145,6 +145,10 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                             DEFAULT: 'hsl(var(--card))',
                             foreground: 'hsl(var(--card-foreground))',
                         },
+                        popover: {
+                            DEFAULT: 'hsl(var(--popover))',
+                            foreground: 'hsl(var(--popover-foreground))',
+                        },
                     },
                     borderRadius: {
                         lg: 'var(--radius)',
@@ -161,6 +165,8 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             --foreground: 222.2 84% 4.9%;
             --card: 0 0% 100%;
             --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
             --primary: 221.2 83.2% 53.3%;
             --primary-foreground: 210 40% 98%;
             --secondary: 210 40% 96.1%;
@@ -182,6 +188,8 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             --foreground: 213 31% 91%;
             --card: 224 71% 4%;
             --card-foreground: 213 31% 91%;
+            --popover: 224 71% 4%;
+            --popover-foreground: 213 31% 91%;
             --primary: 210 100% 52%;
             --primary-foreground: 222.2 47.4% 11.2%;
             --secondary: 222.2 47.4% 11.2%;
