@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 /**
- * Hybula Looking Glass - Modern Tailwind/shadcn UI
+ * Looking Glass - Modern Tailwind/shadcn UI
  *
  * Provides UI and input for the looking glass backend.
  *
- * @copyright 2025 Hybula B.V.
+ * @copyright 2024-2026 DigneZzZ (gig.ovh)
  * @license Mozilla Public License 2.0
- * @version 1.3.6
- * @link https://github.com/hybula/lookingglass
+ * @version 2.0.0
+ * @link https://github.com/DigneZzZ/lookingglass
  */
 
 require __DIR__.'/bootstrap.php';
@@ -395,17 +395,30 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                         <h2 class="text-lg font-semibold">Looking Glass</h2>
                     </div>
 
-                    <form method="POST" autocomplete="off" class="space-y-4">
-                        <input type="hidden" name="csrfToken" value="<?php echo $templateData['csrfToken'] ?>">
+                    <div id="lgForm" class="space-y-4">
+                        <input type="hidden" id="csrfToken" value="<?php echo $templateData['csrfToken'] ?>">
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="md:col-span-2 space-y-2">
-                                <label class="text-sm font-medium text-muted-foreground">Target Host</label>
-                                <input type="text" class="input" placeholder="IP address or hostname..." name="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
+                                <label class="text-sm font-medium text-muted-foreground">Target Host <span class="text-xs text-muted-foreground">(where to send packets from this server)</span></label>
+                                <div class="flex gap-2">
+                                    <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
+                                    <div class="flex gap-1">
+                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('<?php echo $templateData['user_ip'] ?>')" title="Test route to your IP">
+                                            My IP
+                                        </button>
+                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('8.8.8.8')" title="Google DNS">
+                                            8.8.8.8
+                                        </button>
+                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('1.1.1.1')" title="Cloudflare DNS">
+                                            1.1.1.1
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-medium text-muted-foreground">Method</label>
-                                <select class="select" name="backendMethod" id="backendMethod">
+                                <select class="select" id="backendMethod">
                                     <?php foreach ($templateData['methods'] as $method): ?>
                                     <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo ucfirst($method) ?></option>
                                     <?php endforeach ?>
@@ -416,13 +429,13 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                         <div class="flex items-center justify-between pt-2">
                             <?php if ($templateData['tos']): ?>
                             <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="checkTerms" class="w-4 h-4 rounded border-border"<?php echo $templateData['session_tos_checked'] ?>>
+                                <input type="checkbox" id="checkTerms" class="w-4 h-4 rounded border-border"<?php echo $templateData['session_tos_checked'] ?>>
                                 <span>I agree with the <a href="<?php echo $templateData['tos'] ?>" target="_blank" class="text-primary hover:underline">Terms of Use</a></span>
                             </label>
                             <?php else: ?>
                             <div></div>
                             <?php endif ?>
-                            <button type="submit" class="btn btn-primary gap-2" id="executeButton" name="submitForm">
+                            <button type="button" class="btn btn-primary gap-2" id="executeButton" onclick="executeCommand()">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -431,14 +444,14 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                             </button>
                         </div>
 
-                        <?php if ($templateData['error_message']): ?>
-                        <div class="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span class="text-sm"><?php echo $templateData['error_message'] ?></span>
+                        <div id="errorAlert" class="hidden">
+                            <div class="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-sm" id="errorMessage"></span>
+                            </div>
                         </div>
-                        <?php endif ?>
 
                         <div class="hidden" id="outputCard">
                             <div class="rounded-lg bg-zinc-950 border border-zinc-800 p-4 mt-4">
@@ -448,12 +461,12 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                                         <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                                         <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
                                     </div>
-                                    <span class="text-xs text-zinc-500 ml-2">Terminal Output</span>
+                                    <span class="text-xs text-zinc-500 ml-2" id="terminalTitle">Terminal Output</span>
                                 </div>
                                 <pre id="outputContent" class="font-mono text-sm text-green-400 whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto"></pre>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
             <?php endif ?>
@@ -531,9 +544,9 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
         <!-- Footer -->
         <footer class="pt-6 mt-12 border-t border-border">
             <div class="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Powered by <a href="https://github.com/hybula/lookingglass" target="_blank" class="text-primary hover:underline">Hybula Looking Glass</a></span>
-                <a href="https://github.com/hybula/lookingglass" target="_blank" class="hover:opacity-80 transition-opacity">
-                    <img src="https://img.shields.io/github/stars/hybula/lookingglass?style=social" alt="GitHub Stars">
+                <span>Powered by <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="text-primary hover:underline">Looking Glass</a> by <a href="https://gig.ovh" target="_blank" class="text-primary hover:underline">DigneZzZ</a></span>
+                <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="hover:opacity-80 transition-opacity">
+                    <img src="https://img.shields.io/github/stars/DigneZzZ/lookingglass?style=social" alt="GitHub Stars">
                 </a>
             </div>
         </footer>
@@ -559,6 +572,12 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
             localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
         });
 
+        // Set target host from quick buttons
+        function setTarget(ip) {
+            document.getElementById('targetHost').value = ip;
+            document.getElementById('targetHost').focus();
+        }
+
         // Copy to clipboard
         async function copyToClipboard(text, button) {
             if (!navigator?.clipboard?.writeText) {
@@ -571,44 +590,101 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
             await new Promise(r => setTimeout(r, 1500));
             button.innerHTML = originalHtml;
         }
-    </script>
 
-    <?php if ($templateData['session_call_backend']): ?>
-    <script>
-        (function () {
-            const outputContent = document.getElementById('outputContent');
+        // Execute command via AJAX
+        let isExecuting = false;
+        
+        async function executeCommand() {
+            if (isExecuting) return;
+            
+            const targetHost = document.getElementById('targetHost').value.trim();
+            const method = document.getElementById('backendMethod').value;
+            const csrfToken = document.getElementById('csrfToken').value;
             const executeButton = document.getElementById('executeButton');
             const outputCard = document.getElementById('outputCard');
-
+            const outputContent = document.getElementById('outputContent');
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const terminalTitle = document.getElementById('terminalTitle');
+            const checkTerms = document.getElementById('checkTerms');
+            
+            // Validation
+            if (!targetHost) {
+                showError('Please enter a target host');
+                return;
+            }
+            
+            <?php if ($templateData['tos']): ?>
+            if (checkTerms && !checkTerms.checked) {
+                showError('You must agree with the Terms of Use');
+                return;
+            }
+            <?php endif ?>
+            
+            // Hide error, show output
+            errorAlert.classList.add('hidden');
+            outputCard.classList.remove('hidden');
+            outputContent.innerHTML = '';
+            terminalTitle.textContent = `${method} ${targetHost}`;
+            
+            // Set loading state
+            isExecuting = true;
             executeButton.innerHTML = '<svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Executing...';
             executeButton.disabled = true;
             executeButton.classList.add('opacity-70');
-
-            outputCard.classList.remove('hidden');
-
-            fetch('backend.php')
-                .then(async (response) => {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-
-                    for await (const chunk of readChunks(reader)) {
-                        const text = decoder.decode(chunk);
-                        <?php if(in_array($_SESSION[LookingGlass::SESSION_TARGET_METHOD], [LookingGlass::METHOD_MTR, LookingGlass::METHOD_MTR6])): ?>
-                        let splittedText = text.split('@@@');
-                        if (!splittedText[1]) continue;
-                        outputContent.innerHTML = splittedText[1].trim();
-                        <?php else: ?>
-                        outputContent.innerHTML = outputContent.innerHTML + text.trim().replace(/<br \/> +/g, '<br />');
-                        <?php endif ?>
-                    }
-                })
-                .finally(() => {
-                    executeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Execute';
-                    executeButton.disabled = false;
-                    executeButton.classList.remove('opacity-70');
+            
+            const isMtr = method === 'mtr' || method === 'mtr6';
+            
+            try {
+                const response = await fetch('api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        csrfToken: csrfToken,
+                        method: method,
+                        target: targetHost
+                    })
                 });
-        })();
-
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    showError(errorText || 'Request failed');
+                    return;
+                }
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                for await (const chunk of readChunks(reader)) {
+                    const text = decoder.decode(chunk);
+                    if (isMtr) {
+                        const splittedText = text.split('@@@');
+                        if (splittedText[1]) {
+                            outputContent.innerHTML = splittedText[1].trim();
+                        }
+                    } else {
+                        outputContent.innerHTML += text.trim().replace(/<br \/> +/g, '<br />');
+                    }
+                    // Auto-scroll to bottom
+                    outputContent.scrollTop = outputContent.scrollHeight;
+                }
+            } catch (err) {
+                showError('Network error: ' + err.message);
+            } finally {
+                isExecuting = false;
+                executeButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Execute';
+                executeButton.disabled = false;
+                executeButton.classList.remove('opacity-70');
+            }
+        }
+        
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+        }
+        
         function readChunks(reader) {
             return {
                 async* [Symbol.asyncIterator]() {
@@ -620,7 +696,11 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF] = bin2hex(ran
                 },
             };
         }
+        
+        // Execute on Enter key
+        document.getElementById('targetHost')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') executeCommand();
+        });
     </script>
-    <?php endif ?>
 </body>
 </html>

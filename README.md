@@ -17,7 +17,7 @@ Modern network looking glass with **Tailwind CSS** (shadcn-style) UI and PHP 8. 
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/hybula/lookingglass.git
+git clone https://github.com/DigneZzZ/lookingglass.git
 cd lookingglass
 
 # 2. Create .env file
@@ -96,9 +96,9 @@ iPerf3 is included in `docker-compose.caddy.yml` with abuse protection:
 
 ## Credits
 
-Based on [Hybula Looking Glass](https://github.com/hybula/lookingglass).
-Inspired by [telephone/LookingGlass](https://github.com/telephone/LookingGlass).
+Developed by [DigneZzZ](https://gig.ovh).  
+Originally based on [Hybula Looking Glass](https://github.com/hybula/lookingglass).
 
 ## License
 
-Apache License 2.0 with Commons Clause Restriction
+Mozilla Public License 2.0

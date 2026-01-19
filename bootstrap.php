@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 /**
- * Hybula Looking Glass
+ * Looking Glass
  *
- * Provides UI and input for the looking glass backend.
+ * Bootstrap and configuration loader.
  *
- * @copyright 2025 Hybula B.V.
- * * @license Mozilla Public License 2.0
- * * @version 1.3.6
- * * @since File available since release 0.1
- * * @link https://github.com/hybula/lookingglass
+ * @copyright 2024-2026 DigneZzZ (gig.ovh)
+ * @license Mozilla Public License 2.0
+ * @version 2.0.0
+ * @link https://github.com/DigneZzZ/lookingglass
  */
 
 use Hybula\LookingGlass;

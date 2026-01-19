@@ -10,3 +10,10 @@ WORKDIR /var/www/html
 
 COPY --chown=www-data:www-data . .
 COPY docker/php-fpm/src/config.php config.php
+
+# Generate speedtest files
+RUN mkdir -p /var/www/html/files && \
+    dd if=/dev/zero of=/var/www/html/files/100MB.bin bs=1M count=100 && \
+    dd if=/dev/zero of=/var/www/html/files/1GB.bin bs=1M count=1024 && \
+    dd if=/dev/zero of=/var/www/html/files/10GB.bin bs=1M count=10240 && \
+    chown -R www-data:www-data /var/www/html/files

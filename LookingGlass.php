@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 /**
- * Hybula Looking Glass
+ * Looking Glass
  *
  * The LookingGlass class provides all functionality.
  *
- * @copyright 2025 Hybula B.V.
+ * @copyright 2024-2026 DigneZzZ (gig.ovh)
  * @license Mozilla Public License 2.0
- * @version 1.3.6
- * @since File available since release 0.1
- * @link https://github.com/hybula/lookingglass
+ * @version 2.0.0
+ * @link https://github.com/DigneZzZ/lookingglass
  */
 
 namespace Hybula;

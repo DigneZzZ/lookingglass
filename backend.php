@@ -1,14 +1,13 @@
 <?php declare(strict_types=1);
 /**
- * Hybula Looking Glass
+ * Looking Glass
  *
  * Does the actual backend work for executed commands.
  *
- * @copyright 2025 Hybula B.V.
- * * @license Mozilla Public License 2.0
- * * @version 1.3.6
- * * @since File available since release 0.1
- * * @link https://github.com/hybula/lookingglass
+ * @copyright 2024-2026 DigneZzZ (gig.ovh)
+ * @license Mozilla Public License 2.0
+ * @version 2.0.0
+ * @link https://github.com/DigneZzZ/lookingglass
  */
 
 require __DIR__.'/LookingGlass.php';
