@@ -16,13 +16,13 @@ RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
 # Generate speedtest files if they do not exist\n\
-if [ ! -f /var/www/html/files/100MB.bin ]; then\n\
+if [ ! -f /srv/files/100MB.bin ]; then\n\
     echo "Generating speedtest files..."\n\
-    mkdir -p /var/www/html/files\n\
-    dd if=/dev/zero of=/var/www/html/files/100MB.bin bs=1M count=100 2>/dev/null\n\
-    dd if=/dev/zero of=/var/www/html/files/1GB.bin bs=1M count=1024 2>/dev/null\n\
-    dd if=/dev/zero of=/var/www/html/files/10GB.bin bs=1M count=10240 2>/dev/null\n\
-    chown -R www-data:www-data /var/www/html/files\n\
+    mkdir -p /srv/files\n\
+    dd if=/dev/zero of=/srv/files/100MB.bin bs=1M count=100 2>/dev/null\n\
+    dd if=/dev/zero of=/srv/files/1GB.bin bs=1M count=1024 2>/dev/null\n\
+    dd if=/dev/zero of=/srv/files/10GB.bin bs=1M count=10240 2>/dev/null\n\
+    chmod 644 /srv/files/*.bin\n\
     echo "Speedtest files generated."\n\
 fi\n\
 \n\

@@ -1,9 +1,18 @@
 {$LG_DOMAIN} {
     encode gzip
     
-    root * /var/www/html
-    php_fastcgi lg-php:9000
-    file_server
+    # Serve speedtest files from separate volume
+    handle /files/* {
+        root * /srv
+        file_server
+    }
+    
+    # Main application
+    handle {
+        root * /var/www/html
+        php_fastcgi lg-php:9000
+        file_server
+    }
     
     tls {$LG_EMAIL}
     
