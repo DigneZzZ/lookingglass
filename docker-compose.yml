@@ -27,8 +27,8 @@ services:
       # Please replace them with values that are relevant to your situation!
       LOCATION: Location
       FACILITY: Facility
-      FACILITY_URL: http://localhost/
-      LOGO_URL: https://github.com/hybula/lookingglass/
+      FACILITY_URL: https://www.peeringdb.com/
+      LOGO_URL: https://github.com/DigneZzZ/lookingglass/
       LOGO: '<h2 style="color: #000000;">Company Looking Glass</h2>'
       LOGO_DARK: '<h2 style="color: #ffffff;">Company Looking Glass</h2>'
       IPV4_ADDRESS: 127.0.0.1

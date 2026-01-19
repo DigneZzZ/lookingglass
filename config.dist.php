@@ -9,7 +9,7 @@ const LG_LOGO = '<h2 style="color: #000000;">Company Looking Glass</h2>';
 const LG_LOGO_DARK = '<h2 style="color: #ffffff;">Company Looking Glass</h2>';
 
 // Define the URL where the logo points to;
-const LG_LOGO_URL = 'https://github.com/hybula/lookingglass/';
+const LG_LOGO_URL = 'https://github.com/DigneZzZ/lookingglass/';
 
 // Theme mode;
 const LG_THEME = 'auto';
@@ -79,9 +79,9 @@ const LG_METHODS = [
 
 // Define other looking glasses, this is useful if you have multiple networks and looking glasses;
 const LG_LOCATIONS = [
-    'Location A' => 'https://github.com/hybula/lookingglass/',
-    'Location B' => 'https://github.com/hybula/lookingglass/',
-    'Location C' => 'https://github.com/hybula/lookingglass/',
+    'Location A' => 'https://lg-a.example.com/',
+    'Location B' => 'https://lg-b.example.com/',
+    'Location C' => 'https://lg-c.example.com/',
 ];
 
 // Enable the iPerf info inside the speedtest block, set to false to disable;
@@ -96,9 +96,9 @@ const LG_SPEEDTEST_LABEL_OUTGOING = 'iPerf3 Outgoing';
 const LG_SPEEDTEST_CMD_OUTGOING = 'iperf3 -4 -c hostname -p 5201 -P 4 -R';
 // Define speedtest files with URLs to the actual files;
 const LG_SPEEDTEST_FILES = [
-    '100M' => 'https://github.com/hybula/lookingglass/',
-    '1G' => 'https://github.com/hybula/lookingglass/',
-    '10G' => 'https://github.com/hybula/lookingglass/'
+    '100M' => '/download.php?file=100MB',
+    '1G' => '/download.php?file=1GB',
+    '10G' => '/download.php?file=10GB'
 ];
 
 // Define if you require visitors to agree with the Terms of Use. The value should be a link to the terms, or false to disable it completely.
