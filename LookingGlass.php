@@ -276,46 +276,45 @@ class LookingGlass
         $context = stream_context_create([
             'http' => [
                 'timeout' => 10,
-                'header' => 'User-Agent: LookingGlass/2.0'
+                'header' => "User-Agent: LookingGlass/2.0\r\nAccept: application/json"
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true
             ]
         ]);
 
-        // Step 1: Get ASN for IP
-        $prefixUrl = 'https://api.bgpview.io/ip/' . urlencode($ip);
-        $prefixResponse = @file_get_contents($prefixUrl, false, $context);
+        // Step 1: Get ASN and prefix from RIPE Stat
+        $networkInfoUrl = 'https://stat.ripe.net/data/network-info/data.json?resource=' . urlencode($ip);
+        $networkResponse = @file_get_contents($networkInfoUrl, false, $context);
         
-        if ($prefixResponse === false) {
+        if ($networkResponse === false) {
             return null;
         }
 
-        $prefixData = json_decode($prefixResponse, true);
-        if (!isset($prefixData['data']['prefixes'][0]['asn']['asn'])) {
+        $networkData = json_decode($networkResponse, true);
+        if (!isset($networkData['data']['asns'][0])) {
             return null;
         }
 
-        $asn = $prefixData['data']['prefixes'][0]['asn']['asn'];
-        $asnName = $prefixData['data']['prefixes'][0]['asn']['name'] ?? '';
-        $asnDescription = $prefixData['data']['prefixes'][0]['asn']['description'] ?? '';
+        $asn = $networkData['data']['asns'][0];
+        $currentPrefix = $networkData['data']['prefix'] ?? '';
 
-        // Step 2: Get ASN details (prefixes, etc.)
-        $asnUrl = 'https://api.bgpview.io/asn/' . $asn;
-        $asnResponse = @file_get_contents($asnUrl, false, $context);
+        // Step 2: Get ASN details from RIPE Stat
+        $asnOverviewUrl = 'https://stat.ripe.net/data/as-overview/data.json?resource=AS' . $asn;
+        $asnResponse = @file_get_contents($asnOverviewUrl, false, $context);
         
-        $countryCode = '';
-        $rir = '';
-        $website = '';
+        $asnName = '';
         
         if ($asnResponse !== false) {
             $asnData = json_decode($asnResponse, true);
-            if (isset($asnData['data'])) {
-                $countryCode = $asnData['data']['country_code'] ?? '';
-                $rir = $asnData['data']['rir_allocation']['rir_name'] ?? '';
-                $website = $asnData['data']['website'] ?? '';
+            if (isset($asnData['data']['holder'])) {
+                $asnName = $asnData['data']['holder'];
             }
         }
 
-        // Step 3: Get prefixes for ASN
-        $prefixesUrl = 'https://api.bgpview.io/asn/' . $asn . '/prefixes';
+        // Step 3: Get announced prefixes from RIPE Stat
+        $prefixesUrl = 'https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS' . $asn;
         $prefixesResponse = @file_get_contents($prefixesUrl, false, $context);
         
         $prefixesV4 = [];
@@ -323,44 +322,51 @@ class LookingGlass
         
         if ($prefixesResponse !== false) {
             $prefixesData = json_decode($prefixesResponse, true);
-            if (isset($prefixesData['data'])) {
-                // Get IPv4 prefixes (limit to 10)
-                if (isset($prefixesData['data']['ipv4_prefixes'])) {
-                    foreach (array_slice($prefixesData['data']['ipv4_prefixes'], 0, 10) as $prefix) {
-                        $prefixesV4[] = $prefix['prefix'];
-                    }
-                }
-                // Get IPv6 prefixes (limit to 5)
-                if (isset($prefixesData['data']['ipv6_prefixes'])) {
-                    foreach (array_slice($prefixesData['data']['ipv6_prefixes'], 0, 5) as $prefix) {
-                        $prefixesV6[] = $prefix['prefix'];
+            if (isset($prefixesData['data']['prefixes'])) {
+                foreach ($prefixesData['data']['prefixes'] as $prefix) {
+                    $p = $prefix['prefix'];
+                    if (strpos($p, ':') !== false) {
+                        // IPv6
+                        if (count($prefixesV6) < 5) {
+                            $prefixesV6[] = $p;
+                        }
+                    } else {
+                        // IPv4
+                        if (count($prefixesV4) < 10) {
+                            $prefixesV4[] = $p;
+                        }
                     }
                 }
             }
         }
 
-        // Step 4: Get IX (Internet Exchanges) for ASN
-        $ixUrl = 'https://api.bgpview.io/asn/' . $asn . '/ixs';
-        $ixResponse = @file_get_contents($ixUrl, false, $context);
-        
+        // If no prefixes found, at least add the current one
+        if (empty($prefixesV4) && !empty($currentPrefix) && strpos($currentPrefix, ':') === false) {
+            $prefixesV4[] = $currentPrefix;
+        }
+
+        // Step 4: Try to get IX info from PeeringDB API (optional)
         $ixList = [];
+        $peeringDbUrl = 'https://www.peeringdb.com/api/netixlan?asn=' . $asn;
+        $peeringDbResponse = @file_get_contents($peeringDbUrl, false, $context);
         
-        if ($ixResponse !== false) {
-            $ixData = json_decode($ixResponse, true);
-            if (isset($ixData['data'])) {
-                foreach (array_slice($ixData['data'], 0, 10) as $ix) {
-                    $ixList[] = $ix['name'] ?? $ix['name_full'] ?? '';
+        if ($peeringDbResponse !== false) {
+            $peeringData = json_decode($peeringDbResponse, true);
+            if (isset($peeringData['data']) && is_array($peeringData['data'])) {
+                $ixNames = [];
+                foreach ($peeringData['data'] as $netixlan) {
+                    if (isset($netixlan['name']) && !in_array($netixlan['name'], $ixNames)) {
+                        $ixNames[] = $netixlan['name'];
+                        if (count($ixNames) >= 10) break;
+                    }
                 }
-                $ixList = array_filter($ixList);
+                $ixList = $ixNames;
             }
         }
 
         return [
             'asn' => 'AS' . $asn,
-            'asn_name' => $asnName ?: $asnDescription,
-            'country_code' => $countryCode,
-            'rir' => $rir,
-            'website' => $website,
+            'asn_name' => $asnName,
             'prefixes_v4' => $prefixesV4,
             'prefixes_v6' => $prefixesV6,
             'ix_list' => $ixList,
