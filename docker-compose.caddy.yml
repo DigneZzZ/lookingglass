@@ -13,6 +13,7 @@ services:
       - caddy_config:/config
       - ./:/var/www/html:ro
       - speedtest_files:/srv/files:ro
+      - /var/log/caddy:/var/log/caddy
     environment:
       LG_DOMAIN: ${LG_DOMAIN}
       LG_EMAIL: ${LG_EMAIL}
