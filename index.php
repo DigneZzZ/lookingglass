@@ -278,6 +278,8 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
         .card {
             @apply rounded-xl border border-border bg-card/80 backdrop-blur-sm text-card-foreground shadow-lg transition-all duration-300;
+            position: relative;
+            z-index: 1;
         }
 
         .card:hover {
@@ -458,7 +460,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
     <div class="container mx-auto max-w-5xl px-3 sm:px-4 py-6 sm:py-8 md:py-12">
         <!-- Header -->
-        <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 sm:mb-8 border-b border-border/50 animate-fade-in">
+        <header class="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 sm:mb-8 border-b border-border/50 animate-fade-in" style="z-index: 9999;">
             <div class="flex items-center gap-3 sm:gap-4">
                 <a href="<?php echo $templateData['logo_url'] ?>" target="_blank" class="flex items-center gap-2 sm:gap-3 text-foreground hover:text-primary transition-all duration-300 group">
                     <?php if ($templateData['logo_image'] || $templateData['logo_image_dark']): ?>
