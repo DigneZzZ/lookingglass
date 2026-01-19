@@ -127,13 +127,23 @@ if (!isset($_SESSION[LookingGlass::SESSION_CSRF])) {
 $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 ?>
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1" name="viewport">
     <meta name="description" content="Network Looking Glass - Test network connectivity">
     <meta name="color-scheme" content="dark light">
     <title><?php echo $templateData['title'] ?></title>
+    <script>
+        // Apply theme immediately to prevent flash
+        (function() {
+            const saved = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -234,7 +244,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             @apply bg-background text-foreground antialiased;
         }
 
-        /* Animated background */
+        /* Animated background - Light theme */
         .bg-grid {
             background-size: 60px 60px;
             background-image: 
@@ -242,7 +252,8 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 linear-gradient(to bottom, hsl(220 20% 88% / 0.8) 1px, transparent 1px);
         }
 
-        .dark .bg-grid {
+        /* Animated background - Dark theme */
+        html.dark .bg-grid {
             background-image: 
                 linear-gradient(to right, hsl(216 34% 17% / 0.5) 1px, transparent 1px),
                 linear-gradient(to bottom, hsl(216 34% 17% / 0.5) 1px, transparent 1px);
@@ -252,7 +263,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.12), transparent);
         }
 
-        .dark .bg-gradient-radial {
+        html.dark .bg-gradient-radial {
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.15), transparent);
         }
 
