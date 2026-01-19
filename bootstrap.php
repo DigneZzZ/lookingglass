@@ -85,17 +85,19 @@ $networkInfo = null;
 $dynamicEnabled = !defined('LG_NETWORK_INFO_DYNAMIC') || LG_NETWORK_INFO_DYNAMIC !== false;
 
 if ($dynamicEnabled && !empty(LG_IPV4) && LG_IPV4 !== '127.0.0.1') {
-    // Try to get dynamic network info from API (RIPE Stat + PeeringDB)
+    // Try to get dynamic network info from API (RIPE Stat)
     $networkInfo = LookingGlass::getNetworkInfo(LG_IPV4);
 }
 
 // Fallback to static ENV if dynamic failed or disabled
 if ($networkInfo === null && defined('LG_ASN') && LG_ASN) {
+    $asnNumber = preg_replace('/[^0-9]/', '', LG_ASN);
     $networkInfo = [
         'asn' => LG_ASN,
         'asn_name' => defined('LG_ASN_NAME') ? LG_ASN_NAME : '',
         'upstreams' => [], // Can't get dynamically, leave empty
-        'peeringdb' => defined('LG_PEERINGDB') ? LG_PEERINGDB : 'https://www.peeringdb.com/asn/' . preg_replace('/[^0-9]/', '', LG_ASN),
+        'bgp_tools' => 'https://bgp.tools/as/' . $asnNumber,
+        'bgp_he' => 'https://bgp.he.net/AS' . $asnNumber,
         'ix_list' => defined('LG_IX_LIST') && LG_IX_LIST ? array_map('trim', explode(',', LG_IX_LIST)) : [],
     ];
 }

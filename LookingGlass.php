@@ -372,7 +372,8 @@ class LookingGlass
             'asn_name' => $asnName,
             'upstreams' => $upstreams,
             'ix_list' => $ixList,
-            'peeringdb' => 'https://www.peeringdb.com/asn/' . $asn,
+            'bgp_tools' => 'https://bgp.tools/as/' . $asn,
+            'bgp_he' => 'https://bgp.he.net/AS' . $asn,
             'fetched_at' => time()
         ];
     }
