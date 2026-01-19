@@ -35,6 +35,8 @@ if (!empty($_POST)) {
     }
 
     $targetHost = $_POST['targetHost'];
+    
+    // IPv4 network commands validation
     if (in_array($_POST['backendMethod'], ['ping', 'mtr', 'traceroute'])) {
         if (!LookingGlass::isValidIpv4($_POST['targetHost']) &&
             !$targetHost = LookingGlass::isValidHost($_POST['targetHost'], LookingGlass::IPV4)
@@ -43,11 +45,34 @@ if (!empty($_POST)) {
         }
     }
 
+    // IPv6 network commands validation
     if (in_array($_POST['backendMethod'], ['ping6', 'mtr6', 'traceroute6'])) {
         if (!LookingGlass::isValidIpv6($_POST['targetHost']) &&
             !$targetHost = LookingGlass::isValidHost($_POST['targetHost'],LookingGlass::IPV6)
         ) {
             exitErrorMessage('No valid IPv6 provided.');
+        }
+    }
+
+    // WHOIS validation - accepts IP, domain, or ASN
+    if ($_POST['backendMethod'] === 'whois') {
+        $targetHost = trim($_POST['targetHost']);
+        // Basic sanitization - allow alphanumeric, dots, colons, slashes, hyphens
+        if (!preg_match('/^[a-zA-Z0-9.:\/\-]+$/', $targetHost)) {
+            exitErrorMessage('Invalid WHOIS target. Use IP, domain, or ASN (e.g., AS15169).');
+        }
+    }
+
+    // BGP validation - accepts IP, prefix, or ASN
+    if ($_POST['backendMethod'] === 'bgp') {
+        $targetHost = trim($_POST['targetHost']);
+        // Allow IP addresses, prefixes (x.x.x.x/xx), and ASN (ASxxxxx or just numbers)
+        $isValidBGP = filter_var($targetHost, FILTER_VALIDATE_IP) ||
+                      preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/', $targetHost) ||
+                      preg_match('/^[0-9a-fA-F:]+\/\d{1,3}$/', $targetHost) ||
+                      preg_match('/^AS?\d+$/i', $targetHost);
+        if (!$isValidBGP) {
+            exitErrorMessage('Invalid BGP target. Use IP, prefix (x.x.x.x/xx), or ASN (AS15169).');
         }
     }
 
@@ -460,14 +485,21 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                     </svg>
                 </button>
                 <!-- Location Selector -->
-                <?php if (!empty($templateData['locations'])): ?>
+                <?php 
+                // Фильтруем локации, исключая текущий сервер по домену
+                $currentHost = $_SERVER['HTTP_HOST'] ?? '';
+                $filteredLocations = array_filter($templateData['locations'], function($link) use ($currentHost) {
+                    $parsedUrl = parse_url($link);
+                    $linkHost = $parsedUrl['host'] ?? '';
+                    return $linkHost !== $currentHost;
+                });
+                ?>
+                <?php if (!empty($filteredLocations)): ?>
                 <div class="relative">
-                    <select onchange="window.location = this.value" class="select pr-8 min-w-[140px] sm:min-w-[160px] text-sm">
-                        <option value=""><?php echo $templateData['current_location'] ?></option>
-                        <?php foreach ($templateData['locations'] as $location => $link): ?>
-                            <?php if ($location !== $templateData['current_location']): ?>
-                            <option value="<?php echo $link ?>"><?php echo $location ?></option>
-                            <?php endif ?>
+                    <select onchange="if(this.value) window.location = this.value" class="select pr-8 min-w-[140px] sm:min-w-[160px] text-sm">
+                        <option value=""><?php echo htmlspecialchars($templateData['current_location']) ?></option>
+                        <?php foreach ($filteredLocations as $location => $link): ?>
+                            <option value="<?php echo htmlspecialchars($link) ?>"><?php echo htmlspecialchars($location) ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
@@ -585,14 +617,19 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                                     Target Host
                                     <span class="relative group">
                                         <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs cursor-help border border-border hover:bg-accent transition-colors">?</span>
-                                        <span class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-card text-card-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50">
-                                            Enter an IP address or hostname where this server will send packets to. Use quick buttons: <strong>My IP</strong> to test route to you, or DNS servers (8.8.8.8, 1.1.1.1) to check connectivity.
+                                        <span class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-card text-card-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-72 z-50" id="targetHelpTooltip">
+                                            <strong>Network tools (Ping, MTR, Traceroute):</strong><br>
+                                            Enter IP address or hostname.<br><br>
+                                            <strong>WHOIS:</strong><br>
+                                            IP, domain, or ASN (e.g., AS15169).<br><br>
+                                            <strong>BGP Route:</strong><br>
+                                            IP, prefix (8.8.8.0/24), or ASN.
                                         </span>
                                     </span>
                                 </label>
                                 <div class="flex flex-col sm:flex-row gap-2">
-                                    <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
-                                    <div class="flex gap-1 flex-wrap">
+                                    <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo htmlspecialchars($templateData['session_target']) ?>" required>
+                                    <div class="flex gap-1 flex-wrap" id="quickButtons">
                                         <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('<?php echo $templateData['user_ip'] ?>')" title="Test route to your IP">
                                             My IP
                                         </button>
@@ -607,7 +644,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs sm:text-sm font-medium text-muted-foreground">Method</label>
-                                <select class="select" id="backendMethod">
+                                <select class="select" id="backendMethod" onchange="updatePlaceholder()">
                                     <?php foreach ($templateData['methods'] as $method): ?>
                                     <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo ucfirst($method) ?></option>
                                     <?php endforeach ?>
@@ -718,12 +755,12 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <?php foreach ($templateData['speedtest_files'] as $file => $link): ?>
-                            <a href="<?php echo $link ?>" class="btn btn-secondary gap-2 download-btn group" data-file="<?php echo $file ?>">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <button type="button" onclick="downloadFile('<?php echo $file ?>', '<?php echo $link ?>')" class="btn btn-secondary gap-2 download-btn group" data-file="<?php echo $file ?>">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-y-0.5 download-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
-                                <?php echo $file ?>
-                            </a>
+                                <span class="file-label"><?php echo $file ?></span>
+                            </button>
                             <?php endforeach ?>
                         </div>
                         <p class="text-xs text-muted-foreground">Limits: 100M (3×), 1G (2×), 10G (1×) per session</p>
@@ -767,10 +804,144 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
         });
 
+        // User IP for quick buttons
+        const userIP = '<?php echo $templateData['user_ip'] ?>';
+
+        // Quick button templates for different methods
+        const quickButtonsNetwork = `
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('${userIP}')" title="Test route to your IP">My IP</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('8.8.8.8')" title="Google DNS">8.8.8.8</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('1.1.1.1')" title="Cloudflare DNS">1.1.1.1</button>
+        `;
+        
+        const quickButtonsWhois = `
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('${userIP}')" title="Your IP">My IP</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS15169')" title="Google ASN">AS15169</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS13335')" title="Cloudflare ASN">AS13335</button>
+        `;
+        
+        const quickButtonsBGP = `
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('8.8.8.0/24')" title="Google DNS prefix">8.8.8.0/24</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('1.1.1.0/24')" title="Cloudflare prefix">1.1.1.0/24</button>
+            <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('AS15169')" title="Google ASN">AS15169</button>
+        `;
+
+        // Update placeholder and quick buttons based on selected method
+        function updatePlaceholder() {
+            const method = document.getElementById('backendMethod').value;
+            const targetInput = document.getElementById('targetHost');
+            const quickButtonsDiv = document.getElementById('quickButtons');
+            
+            if (method === 'whois') {
+                targetInput.placeholder = 'IP, domain, or ASN (e.g., AS15169)...';
+                quickButtonsDiv.innerHTML = quickButtonsWhois;
+            } else if (method === 'bgp') {
+                targetInput.placeholder = 'IP, prefix (8.8.8.0/24), or ASN...';
+                quickButtonsDiv.innerHTML = quickButtonsBGP;
+            } else {
+                targetInput.placeholder = 'IP address or hostname...';
+                quickButtonsDiv.innerHTML = quickButtonsNetwork;
+            }
+        }
+
+        // Initialize placeholder on page load
+        updatePlaceholder();
+
         // Set target host from quick buttons
         function setTarget(ip) {
             document.getElementById('targetHost').value = ip;
             document.getElementById('targetHost').focus();
+        }
+
+        // Toast notification
+        function showToast(message, type = 'error') {
+            // Remove existing toasts
+            document.querySelectorAll('.toast-notification').forEach(t => t.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification fixed bottom-4 right-4 left-4 sm:left-auto sm:w-96 z-50 p-4 rounded-xl shadow-2xl border backdrop-blur-md animate-fade-in ${
+                type === 'error' 
+                    ? 'bg-destructive/90 border-destructive text-white' 
+                    : type === 'success'
+                    ? 'bg-green-500/90 border-green-600 text-white'
+                    : 'bg-card/90 border-border text-card-foreground'
+            }`;
+            
+            toast.innerHTML = `
+                <div class="flex items-start gap-3">
+                    <div class="shrink-0 mt-0.5">
+                        ${type === 'error' 
+                            ? '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                            : type === 'success'
+                            ? '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>'
+                            : '<svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                        }
+                    </div>
+                    <div class="flex-1 text-sm font-medium">${message}</div>
+                    <button onclick="this.closest('.toast-notification').remove()" class="shrink-0 hover:opacity-70 transition-opacity">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Download file with limit check
+        async function downloadFile(fileName, url) {
+            const button = document.querySelector(`[data-file="${fileName}"]`);
+            const icon = button.querySelector('.download-icon');
+            const label = button.querySelector('.file-label');
+            
+            // Show loading state
+            const originalIcon = icon.outerHTML;
+            icon.outerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            button.disabled = true;
+            button.classList.add('opacity-70');
+            
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                
+                if (response.status === 429) {
+                    // Rate limited - get error message
+                    const errorResponse = await fetch(url);
+                    const errorData = await errorResponse.json();
+                    showToast(`${errorData.error}. ${errorData.message}`, 'error');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    showToast('Download failed. Please try again.', 'error');
+                    return;
+                }
+                
+                // Start actual download
+                showToast(`Starting download: ${fileName}...`, 'info');
+                
+                // Create hidden link and trigger download
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName + '.bin';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+            } catch (err) {
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                // Restore button
+                button.disabled = false;
+                button.classList.remove('opacity-70');
+                button.querySelector('svg').outerHTML = originalIcon;
+            }
         }
 
         // Copy to clipboard

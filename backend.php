@@ -46,5 +46,11 @@ if (isset($_SESSION[LookingGlass::SESSION_TARGET_HOST]) &&
         case LookingGlass::METHOD_TRACEROUTE6:
             LookingGlass::traceroute6($_SESSION[LookingGlass::SESSION_TARGET_HOST]);
             break;
+        case LookingGlass::METHOD_WHOIS:
+            LookingGlass::whois($_SESSION[LookingGlass::SESSION_TARGET_HOST]);
+            break;
+        case LookingGlass::METHOD_BGP:
+            LookingGlass::bgp($_SESSION[LookingGlass::SESSION_TARGET_HOST]);
+            break;
     }
 }

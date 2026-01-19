@@ -32,6 +32,8 @@ class LookingGlass
     public const METHOD_MTR6 = 'mtr6';
     public const METHOD_TRACEROUTE = 'traceroute';
     public const METHOD_TRACEROUTE6 = 'traceroute6';
+    public const METHOD_WHOIS = 'whois';
+    public const METHOD_BGP = 'bgp';
 
     private const MTR_COUNT = 10;
 
@@ -287,6 +289,104 @@ class LookingGlass
     public static function traceroute6(string $host, int $failCount = 4): bool
     {
         return self::procExecute(['traceroute', '-6', '-w2'], $host, $failCount);
+    }
+
+    /**
+     * Executes a whois command.
+     * Performs WHOIS lookup for IP addresses, domains, or ASN.
+     *
+     * @param  string  $target  The target (IP, domain, or ASN).
+     * @return bool True on success.
+     */
+    public static function whois(string $target): bool
+    {
+        return self::procExecute(['whois'], $target);
+    }
+
+    /**
+     * Performs BGP route lookup via external API (bgp.tools).
+     * Shows BGP routing information including AS path, origin, and prefixes.
+     *
+     * @param  string  $target  The target IP or prefix.
+     * @return bool True on success.
+     */
+    public static function bgp(string $target): bool
+    {
+        // Output buffer settings
+        @ini_set('output_buffering', 'off');
+        @ini_set('zlib.output_compression', false);
+        while (@ob_end_flush()) {}
+        @ob_implicit_flush(true);
+
+        echo "BGP Route Lookup for: {$target}\n";
+        echo str_repeat("-", 60) . "\n\n";
+
+        // Validate input - IP, prefix, or ASN
+        $isASN = preg_match('/^AS?\d+$/i', $target);
+        $isIP = filter_var($target, FILTER_VALIDATE_IP);
+        $isPrefix = preg_match('/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/', $target) ||
+                    preg_match('/^[0-9a-fA-F:]+\/\d{1,3}$/', $target);
+
+        if (!$isASN && !$isIP && !$isPrefix) {
+            echo "Error: Invalid target. Please provide an IP address, prefix (x.x.x.x/xx), or ASN (ASxxxxx).\n";
+            return false;
+        }
+
+        // Use bgp.tools whois-style query
+        $queryTarget = $target;
+        if ($isASN) {
+            $queryTarget = strtoupper($target);
+            if (substr($queryTarget, 0, 2) !== 'AS') {
+                $queryTarget = 'AS' . $queryTarget;
+            }
+        }
+
+        echo "Querying BGP information...\n\n";
+
+        // Execute whois query to bgp.tools
+        $spec = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w']
+        ];
+
+        $process = proc_open(['whois', '-h', 'bgp.tools', $queryTarget], $spec, $pipes, null);
+
+        if (!is_resource($process)) {
+            echo "Error: Could not execute BGP lookup.\n";
+            return false;
+        }
+
+        // Close stdin
+        fclose($pipes[0]);
+
+        // Read output
+        stream_set_blocking($pipes[1], false);
+        $buffer = '';
+        $lastOutput = time();
+
+        while (!feof($pipes[1])) {
+            $line = fgets($pipes[1]);
+            if ($line !== false && $line !== '') {
+                echo $line;
+                @ob_flush();
+                flush();
+                $lastOutput = time();
+            }
+
+            // Timeout after 30 seconds of no output
+            if ((time() - $lastOutput) > 30) {
+                break;
+            }
+
+            usleep(10000); // 10ms delay
+        }
+
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        proc_close($process);
+
+        return true;
     }
 
     /**

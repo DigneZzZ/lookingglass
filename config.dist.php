@@ -52,7 +52,22 @@ const LG_IPV4 = '127.0.0.1';
 // Define an IPv6 for testing;
 const LG_IPV6 = '::1';
 
-// Define the methods that can be used by visitors to test it out;
+// ============================================================================
+// Available Methods
+// ============================================================================
+// 
+// Network diagnostic tools:
+// - ping/ping6       - ICMP echo requests (IPv4/IPv6)
+// - mtr/mtr6         - Combination of ping and traceroute with stats
+// - traceroute/traceroute6 - Path to destination
+// 
+// Lookup tools (require whois package installed):
+// - whois            - WHOIS lookup for IP, domain, or ASN
+// - bgp              - BGP route lookup via bgp.tools
+// 
+// Note: Comment out methods you don't want to enable
+// ============================================================================
+
 const LG_METHODS = [
     LookingGlass::METHOD_PING,
     LookingGlass::METHOD_PING6,
@@ -60,6 +75,8 @@ const LG_METHODS = [
     LookingGlass::METHOD_MTR6,
     LookingGlass::METHOD_TRACEROUTE,
     LookingGlass::METHOD_TRACEROUTE6,
+    LookingGlass::METHOD_WHOIS,
+    LookingGlass::METHOD_BGP,
 ];
 
 // Define other looking glasses, this is useful if you have multiple networks and looking glasses;
