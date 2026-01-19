@@ -90,12 +90,12 @@ const LG_SPEEDTEST_LABEL_OUTGOING = 'iPerf3 Outgoing';
 // Define the command to use to test outgoing speed using iPerf, preferable iPerf3;
 const LG_SPEEDTEST_CMD_OUTGOING = 'iperf3 -4 -c hostname -p 5201 -P 4 -R';
 // Define speedtest files with URLs to the actual files;
-// Files are generated during Docker build in /files/ directory
+// Files are served through download.php with rate limiting
 $lgDomain = getenv('LG_DOMAIN') ?: $_SERVER['HTTP_HOST'] ?? 'localhost';
 define('LG_SPEEDTEST_FILES', [
-    '100M' => 'https://' . $lgDomain . '/files/100MB.bin',
-    '1G' => 'https://' . $lgDomain . '/files/1GB.bin',
-    '10G' => 'https://' . $lgDomain . '/files/10GB.bin'
+    '100M' => 'https://' . $lgDomain . '/download.php?file=100MB',
+    '1G' => 'https://' . $lgDomain . '/download.php?file=1GB',
+    '10G' => 'https://' . $lgDomain . '/download.php?file=10GB'
 ]);
 
 // Define if you require visitors to agree with the Terms of Use. The value should be a link to the terms, or false to disable it completely.

@@ -178,39 +178,75 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         }
 
         .dark {
-            --background: 222.2 84% 4.9%;
-            --foreground: 210 40% 98%;
-            --card: 222.2 84% 4.9%;
-            --card-foreground: 210 40% 98%;
-            --primary: 217.2 91.2% 59.8%;
+            --background: 224 71% 4%;
+            --foreground: 213 31% 91%;
+            --card: 224 71% 4%;
+            --card-foreground: 213 31% 91%;
+            --primary: 210 100% 52%;
             --primary-foreground: 222.2 47.4% 11.2%;
-            --secondary: 217.2 32.6% 17.5%;
+            --secondary: 222.2 47.4% 11.2%;
             --secondary-foreground: 210 40% 98%;
-            --muted: 217.2 32.6% 17.5%;
-            --muted-foreground: 215 20.2% 65.1%;
-            --accent: 217.2 32.6% 17.5%;
+            --muted: 223 47% 11%;
+            --muted-foreground: 215.4 16.3% 56.9%;
+            --accent: 216 34% 17%;
             --accent-foreground: 210 40% 98%;
-            --destructive: 0 62.8% 30.6%;
+            --destructive: 0 63% 31%;
             --destructive-foreground: 210 40% 98%;
-            --border: 217.2 32.6% 17.5%;
-            --input: 217.2 32.6% 17.5%;
-            --ring: 224.3 76.3% 48%;
+            --border: 216 34% 17%;
+            --input: 216 34% 17%;
+            --ring: 224 76% 48%;
         }
 
         body {
             @apply bg-background text-foreground antialiased;
         }
 
+        /* Animated background */
+        .bg-grid {
+            background-size: 60px 60px;
+            background-image: 
+                linear-gradient(to right, hsl(var(--border) / 0.3) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(var(--border) / 0.3) 1px, transparent 1px);
+        }
+
+        .dark .bg-grid {
+            background-image: 
+                linear-gradient(to right, hsl(216 34% 17% / 0.5) 1px, transparent 1px),
+                linear-gradient(to bottom, hsl(216 34% 17% / 0.5) 1px, transparent 1px);
+        }
+
+        .bg-gradient-radial {
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(var(--primary) / 0.15), transparent);
+        }
+
+        .dark .bg-gradient-radial {
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.15), transparent);
+        }
+
+        /* Glow effects */
+        .glow {
+            box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.4);
+        }
+
+        .glow-sm {
+            box-shadow: 0 0 10px -3px hsl(var(--primary) / 0.3);
+        }
+
         .card {
-            @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
+            @apply rounded-xl border border-border bg-card/80 backdrop-blur-sm text-card-foreground shadow-lg transition-all duration-300;
+        }
+
+        .card:hover {
+            @apply border-primary/30 shadow-xl;
+            box-shadow: 0 0 30px -10px hsl(var(--primary) / 0.2);
         }
 
         .btn {
-            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+            @apply inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98];
         }
 
         .btn-primary {
-            @apply bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2;
+            @apply bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25 h-10 px-5 py-2;
         }
 
         .btn-secondary {
@@ -218,7 +254,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         }
 
         .btn-outline {
-            @apply border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2;
+            @apply border border-input bg-background/50 shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-primary/50 h-9 px-4 py-2;
         }
 
         .btn-ghost {
@@ -226,15 +262,15 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         }
 
         .input {
-            @apply flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+            @apply flex h-10 w-full rounded-lg border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-primary disabled:cursor-not-allowed disabled:opacity-50;
         }
 
         .select {
-            @apply flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+            @apply flex h-10 w-full items-center justify-between rounded-lg border border-input bg-background/50 backdrop-blur-sm px-3 py-2 text-sm shadow-sm ring-offset-background transition-all duration-200 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary disabled:cursor-not-allowed disabled:opacity-50;
         }
 
         .badge {
-            @apply inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+            @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
         }
 
         .badge-secondary {
@@ -245,40 +281,156 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             @apply text-foreground;
         }
 
+        /* Terminal styling */
+        .terminal {
+            @apply rounded-xl bg-black/90 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden;
+        }
+
+        .terminal-header {
+            @apply flex items-center gap-2 px-4 py-3 bg-white/5 border-b border-white/10;
+        }
+
+        .terminal-dot {
+            @apply w-3 h-3 rounded-full;
+        }
+
+        .terminal-content {
+            @apply p-4 font-mono text-sm text-green-400 max-h-80 overflow-y-auto;
+        }
+
+        /* Animations */
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: .5; }
         }
 
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .animate-pulse-slow {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+
+        .animate-slide-up {
+            animation: slide-up 0.6s ease-out forwards;
+        }
+
+        /* Staggered animation delays */
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+
+        /* Mobile responsive improvements */
+        @media (max-width: 640px) {
+            .card {
+                @apply rounded-lg;
+            }
+            
+            .btn {
+                @apply h-11 text-base;
+            }
+
+            .input, .select {
+                @apply h-11 text-base;
+            }
+
+            .terminal-content {
+                @apply text-xs max-h-64;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            @apply bg-transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            @apply bg-muted rounded-full;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            @apply bg-muted-foreground/50;
+        }
+
+        /* Focus visible improvements */
+        *:focus-visible {
+            @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            @apply absolute z-50 px-3 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg shadow-lg;
+        }
+
+        /* Popover styling */
+        .popover {
+            @apply absolute z-50 w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg;
         }
     </style>
     <?php if ($templateData['custom_css']) { echo '<link href="'.$templateData['custom_css'].'" rel="stylesheet">'; } ?>
     <?php if ($templateData['custom_head']) { echo $templateData['custom_head']; } ?>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen bg-grid bg-gradient-radial">
+    <!-- Animated background orbs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse-slow delay-200"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/3 rounded-full blur-3xl animate-float"></div>
+    </div>
+
     <?php echo isset($templateData['custom_header']) ? $templateData['custom_header'] : '' ?>
 
-    <div class="container mx-auto max-w-5xl px-4 py-8 md:py-12">
+    <div class="container mx-auto max-w-5xl px-3 sm:px-4 py-6 sm:py-8 md:py-12">
         <!-- Header -->
-        <header class="flex items-center justify-between pb-6 mb-8 border-b border-border">
-            <div class="flex items-center gap-4">
-                <a href="<?php echo $templateData['logo_url'] ?>" target="_blank" class="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+        <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 sm:mb-8 border-b border-border/50 animate-fade-in">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <a href="<?php echo $templateData['logo_url'] ?>" target="_blank" class="flex items-center gap-2 sm:gap-3 text-foreground hover:text-primary transition-all duration-300 group">
                     <?php if ($templateData['logo_image'] || $templateData['logo_image_dark']): ?>
                     <!-- Light theme logo -->
                     <?php if ($templateData['logo_image']): ?>
-                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 block dark:hidden">
+                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-8 sm:h-10 block dark:hidden transition-transform group-hover:scale-105">
                     <?php endif ?>
                     <!-- Dark theme logo -->
                     <?php if ($templateData['logo_image_dark']): ?>
-                    <img src="<?php echo $templateData['logo_image_dark'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 hidden dark:block">
+                    <img src="<?php echo $templateData['logo_image_dark'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-8 sm:h-10 hidden dark:block transition-transform group-hover:scale-105">
                     <?php elseif ($templateData['logo_image']): ?>
-                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-10 hidden dark:block">
+                    <img src="<?php echo $templateData['logo_image'] ?>" alt="<?php echo strip_tags($templateData['logo_data']) ?: 'Looking Glass' ?>" class="h-8 sm:h-10 hidden dark:block transition-transform group-hover:scale-105">
                     <?php endif ?>
                     <?php else: ?>
-                    <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <div class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                         </svg>
                     </div>
@@ -302,7 +454,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 <!-- Location Selector -->
                 <?php if (!empty($templateData['locations'])): ?>
                 <div class="relative">
-                    <select onchange="window.location = this.value" class="select pr-8 min-w-[160px]">
+                    <select onchange="window.location = this.value" class="select pr-8 min-w-[140px] sm:min-w-[160px] text-sm">
                         <option value=""><?php echo $templateData['current_location'] ?></option>
                         <?php foreach ($templateData['locations'] as $location => $link): ?>
                             <?php if ($location !== $templateData['current_location']): ?>
@@ -315,25 +467,27 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             </div>
         </header>
 
-        <main class="space-y-6">
+        <main class="space-y-4 sm:space-y-6">
             <?php if (LG_BLOCK_NETWORK): ?>
             <!-- Network Info Card -->
-            <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center gap-2 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                        </svg>
-                        <h2 class="text-lg font-semibold">Network Information</h2>
+            <div class="card animate-slide-up">
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center gap-2 mb-4 sm:mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base sm:text-lg font-semibold">Network Information</h2>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                         <!-- Location -->
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-muted-foreground">Location</label>
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">Location</label>
                             <div class="flex gap-2">
-                                <input type="text" class="input flex-1" value="<?php echo $templateData['current_location'] ?>" readonly>
-                                <a href="https://www.openstreetmap.org/search?query=<?php echo urlencode($templateData['maps_query']); ?>" target="_blank" class="btn btn-outline" title="View on map">
+                                <input type="text" class="input flex-1 text-sm" value="<?php echo $templateData['current_location'] ?>" readonly>
+                                <a href="https://www.openstreetmap.org/search?query=<?php echo urlencode($templateData['maps_query']); ?>" target="_blank" class="btn btn-outline shrink-0" title="View on map">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -344,7 +498,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
                         <!-- Facility -->
                         <div class="space-y-2">
-                            <label class="text-sm font-medium text-muted-foreground">Facility</label>
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">Facility</label>
                             <div class="flex gap-2">
                                 <input type="text" class="input flex-1" value="<?php echo $templateData['facility'] ?>" readonly>
                                 <a href="<?php echo $templateData['facility_url'] ?>" target="_blank" class="btn btn-outline" title="PeeringDB">
@@ -403,46 +557,48 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
             <?php if (LG_BLOCK_LOOKINGGLASS): ?>
             <!-- Looking Glass Card -->
-            <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center gap-2 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <h2 class="text-lg font-semibold">Looking Glass</h2>
+            <div class="card animate-slide-up delay-100">
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center gap-2 mb-4 sm:mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base sm:text-lg font-semibold">Looking Glass</h2>
                     </div>
 
                     <div id="lgForm" class="space-y-4">
                         <input type="hidden" id="csrfToken" value="<?php echo $templateData['csrfToken'] ?>">
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div class="md:col-span-2 space-y-2">
-                                <label class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+                            <div class="lg:col-span-2 space-y-2">
+                                <label class="text-xs sm:text-sm font-medium text-muted-foreground flex items-center gap-2">
                                     Target Host
                                     <span class="relative group">
-                                        <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs cursor-help border border-border hover:bg-accent">?</span>
-                                        <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50">
+                                        <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs cursor-help border border-border hover:bg-accent transition-colors">?</span>
+                                        <span class="absolute left-0 sm:left-1/2 sm:-translate-x-1/2 bottom-full mb-2 px-3 py-2 bg-card text-card-foreground text-xs rounded-lg shadow-xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-64 z-50">
                                             Enter an IP address or hostname where this server will send packets to. Use quick buttons: <strong>My IP</strong> to test route to you, or DNS servers (8.8.8.8, 1.1.1.1) to check connectivity.
                                         </span>
                                     </span>
                                 </label>
-                                <div class="flex gap-2">
+                                <div class="flex flex-col sm:flex-row gap-2">
                                     <input type="text" class="input flex-1" placeholder="IP address or hostname..." id="targetHost" value="<?php echo $templateData['session_target'] ?>" required>
-                                    <div class="flex gap-1">
-                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('<?php echo $templateData['user_ip'] ?>')" title="Test route to your IP">
+                                    <div class="flex gap-1 flex-wrap">
+                                        <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('<?php echo $templateData['user_ip'] ?>')" title="Test route to your IP">
                                             My IP
                                         </button>
-                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('8.8.8.8')" title="Google DNS">
+                                        <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('8.8.8.8')" title="Google DNS">
                                             8.8.8.8
                                         </button>
-                                        <button type="button" class="btn btn-outline text-xs px-2" onclick="setTarget('1.1.1.1')" title="Cloudflare DNS">
+                                        <button type="button" class="btn btn-outline text-xs px-2 sm:px-3 h-9 sm:h-10" onclick="setTarget('1.1.1.1')" title="Cloudflare DNS">
                                             1.1.1.1
                                         </button>
                                     </div>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-medium text-muted-foreground">Method</label>
+                                <label class="text-xs sm:text-sm font-medium text-muted-foreground">Method</label>
                                 <select class="select" id="backendMethod">
                                     <?php foreach ($templateData['methods'] as $method): ?>
                                     <option value="<?php echo $method ?>"<?php if($templateData['session_method'] === $method): ?> selected<?php endif ?>><?php echo ucfirst($method) ?></option>
@@ -451,16 +607,16 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-between pt-2">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
                             <?php if ($templateData['tos']): ?>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" id="checkTerms" class="w-4 h-4 rounded border-border"<?php echo $templateData['session_tos_checked'] ?>>
-                                <span>I agree with the <a href="<?php echo $templateData['tos'] ?>" target="_blank" class="text-primary hover:underline">Terms of Use</a></span>
+                            <label class="flex items-center gap-2 text-xs sm:text-sm cursor-pointer group">
+                                <input type="checkbox" id="checkTerms" class="w-4 h-4 rounded border-border accent-primary"<?php echo $templateData['session_tos_checked'] ?>>
+                                <span class="group-hover:text-primary transition-colors">I agree with the <a href="<?php echo $templateData['tos'] ?>" target="_blank" class="text-primary hover:underline font-medium">Terms of Use</a></span>
                             </label>
                             <?php else: ?>
                             <div></div>
                             <?php endif ?>
-                            <button type="button" class="btn btn-primary gap-2" id="executeButton" onclick="executeCommand()">
+                            <button type="button" class="btn btn-primary gap-2 w-full sm:w-auto glow-sm" id="executeButton" onclick="executeCommand()">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -469,26 +625,26 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                             </button>
                         </div>
 
-                        <div id="errorAlert" class="hidden">
-                            <div class="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive">
+                        <div id="errorAlert" class="hidden animate-fade-in">
+                            <div class="flex items-center gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                <span class="text-sm" id="errorMessage"></span>
+                                <span class="text-sm font-medium" id="errorMessage"></span>
                             </div>
                         </div>
 
-                        <div class="hidden" id="outputCard">
-                            <div class="rounded-lg bg-zinc-950 border border-zinc-800 p-4 mt-4">
-                                <div class="flex items-center gap-2 mb-3 pb-3 border-b border-zinc-800">
+                        <div class="hidden animate-fade-in" id="outputCard">
+                            <div class="terminal mt-4">
+                                <div class="terminal-header">
                                     <div class="flex gap-1.5">
-                                        <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                                        <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                                        <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                                        <div class="terminal-dot bg-red-500"></div>
+                                        <div class="terminal-dot bg-yellow-500"></div>
+                                        <div class="terminal-dot bg-green-500"></div>
                                     </div>
-                                    <span class="text-xs text-zinc-500 ml-2" id="terminalTitle">Terminal Output</span>
+                                    <span class="text-xs text-zinc-400 ml-2 font-mono" id="terminalTitle">Terminal Output</span>
                                 </div>
-                                <pre id="outputContent" class="font-mono text-sm text-green-400 whitespace-pre-wrap overflow-x-auto max-h-96 overflow-y-auto"></pre>
+                                <pre id="outputContent" class="terminal-content whitespace-pre-wrap"></pre>
                             </div>
                         </div>
                     </div>
@@ -498,27 +654,29 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
             <?php if (LG_BLOCK_SPEEDTEST): ?>
             <!-- Speedtest Card -->
-            <div class="card">
-                <div class="p-6">
-                    <div class="flex items-center gap-2 mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        <h2 class="text-lg font-semibold">Speed Test</h2>
+            <div class="card animate-slide-up delay-200">
+                <div class="p-4 sm:p-6">
+                    <div class="flex items-center gap-2 mb-4 sm:mb-6">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-base sm:text-lg font-semibold">Speed Test</h2>
                     </div>
 
                     <?php if ($templateData['speedtest_iperf']): ?>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
                         <div class="space-y-3">
                             <div class="flex items-center gap-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                                 </svg>
-                                <label class="text-sm font-medium"><?php echo $templateData['speedtest_incoming_label'] ?></label>
+                                <label class="text-xs sm:text-sm font-medium"><?php echo $templateData['speedtest_incoming_label'] ?></label>
                             </div>
                             <div class="flex gap-2">
-                                <code class="flex-1 px-3 py-2 rounded-md bg-muted font-mono text-xs break-all"><?php echo $templateData['speedtest_incoming_cmd']; ?></code>
-                                <button class="btn btn-outline" onclick="copyToClipboard('<?php echo $templateData['speedtest_incoming_cmd'] ?>', this)">
+                                <code class="flex-1 px-3 py-2 rounded-lg bg-muted/50 font-mono text-xs break-all border border-border/50"><?php echo $templateData['speedtest_incoming_cmd']; ?></code>
+                                <button class="btn btn-outline shrink-0" onclick="copyToClipboard('<?php echo $templateData['speedtest_incoming_cmd'] ?>', this)">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
@@ -546,17 +704,21 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
 
                     <?php if (count($templateData['speedtest_files'])): ?>
                     <div class="space-y-3">
-                        <label class="text-sm font-medium text-muted-foreground">Download Test Files</label>
+                        <div class="flex items-center gap-2">
+                            <label class="text-sm font-medium text-muted-foreground">Download Test Files</label>
+                            <span class="text-xs text-muted-foreground">(limited per session)</span>
+                        </div>
                         <div class="flex flex-wrap gap-2">
                             <?php foreach ($templateData['speedtest_files'] as $file => $link): ?>
-                            <a href="<?php echo $link ?>" class="btn btn-secondary gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <a href="<?php echo $link ?>" class="btn btn-secondary gap-2 download-btn group" data-file="<?php echo $file ?>">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
                                 <?php echo $file ?>
                             </a>
                             <?php endforeach ?>
                         </div>
+                        <p class="text-xs text-muted-foreground">Limits: 100M (3×), 1G (2×), 10G (1×) per session</p>
                     </div>
                     <?php endif ?>
                 </div>
@@ -567,11 +729,11 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
         </main>
 
         <!-- Footer -->
-        <footer class="pt-6 mt-12 border-t border-border">
-            <div class="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Powered by <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="text-primary hover:underline">Looking Glass</a> by <a href="https://gig.ovh" target="_blank" class="text-primary hover:underline">DigneZzZ</a></span>
-                <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="hover:opacity-80 transition-opacity">
-                    <img src="https://img.shields.io/github/stars/DigneZzZ/lookingglass?style=social" alt="GitHub Stars">
+        <footer class="pt-6 mt-8 sm:mt-12 border-t border-border/50 animate-fade-in delay-300">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-muted-foreground">
+                <span class="text-center sm:text-left">Powered by <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="text-primary hover:underline font-medium transition-colors">Looking Glass</a> by <a href="https://gig.ovh" target="_blank" class="text-primary hover:underline font-medium transition-colors">DigneZzZ</a></span>
+                <a href="https://github.com/DigneZzZ/lookingglass" target="_blank" class="hover:opacity-80 transition-all hover:scale-105">
+                    <img src="https://img.shields.io/github/stars/DigneZzZ/lookingglass?style=social" alt="GitHub Stars" class="h-5">
                 </a>
             </div>
         </footer>
