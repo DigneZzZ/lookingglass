@@ -509,14 +509,14 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 $currentFlag = LookingGlass::getFlagHtml($currentLocationClean, 20, 'inline-block mr-1');
                 ?>
                 <?php if (!empty($filteredLocations)): ?>
-                <div class="relative location-dropdown">
+                <div class="relative location-dropdown" style="z-index: 9999;">
                     <button type="button" class="select pr-8 min-w-[140px] sm:min-w-[180px] text-sm flex items-center gap-2 cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
                         <?php echo $currentFlag ?><?php echo htmlspecialchars($currentLocationClean) ?>
                         <svg class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
                     </button>
-                    <div class="hidden absolute right-0 mt-1 w-full min-w-[180px] bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                    <div class="hidden absolute right-0 mt-1 w-full min-w-[180px] bg-card border border-border rounded-lg shadow-xl z-[9999] overflow-hidden">
                         <div class="py-1">
                             <div class="px-3 py-2 text-xs text-muted-foreground border-b border-border">Current</div>
                             <div class="px-3 py-2 flex items-center gap-2 bg-accent/50">
