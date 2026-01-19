@@ -703,14 +703,14 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                             </svg>
                         </div>
-                        <h2 class="text-base sm:text-lg font-semibold">Network Details</h2>
-                        <?php if (!empty($netInfo['fetched_at'])): ?>
-                        <span class="ml-auto text-[10px] text-muted-foreground" title="Data cached from bgpview.io">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <h2 class="text-base sm:text-lg font-semibold">Network Connectivity</h2>
+                        <?php if (!empty($netInfo['peeringdb'])): ?>
+                        <a href="<?php echo htmlspecialchars($netInfo['peeringdb']) ?>" target="_blank" class="ml-auto btn btn-outline h-7 px-2 text-xs" title="View full details on PeeringDB">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                             </svg>
-                            <?php echo date('Y-m-d H:i', $netInfo['fetched_at']); ?>
-                        </span>
+                            PeeringDB
+                        </a>
                         <?php endif ?>
                     </div>
 
@@ -718,45 +718,29 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                         <!-- ASN -->
                         <div class="space-y-2">
                             <label class="text-xs sm:text-sm font-medium text-muted-foreground">Autonomous System</label>
-                            <div class="flex gap-2">
-                                <div class="flex-1 px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
-                                    <span class="font-mono text-sm font-semibold text-primary"><?php echo htmlspecialchars($netInfo['asn']) ?></span>
-                                    <?php if (!empty($netInfo['asn_name'])): ?>
-                                    <span class="text-sm text-muted-foreground ml-2"><?php echo htmlspecialchars($netInfo['asn_name']) ?></span>
-                                    <?php endif ?>
-                                </div>
-                                <?php if (!empty($netInfo['peeringdb'])): ?>
-                                <a href="<?php echo htmlspecialchars($netInfo['peeringdb']) ?>" target="_blank" class="btn btn-outline shrink-0" title="View on PeeringDB">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                    </svg>
-                                </a>
+                            <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
+                                <span class="font-mono text-sm font-semibold text-primary"><?php echo htmlspecialchars($netInfo['asn']) ?></span>
+                                <?php if (!empty($netInfo['asn_name'])): ?>
+                                <span class="text-sm text-muted-foreground ml-2"><?php echo htmlspecialchars($netInfo['asn_name']) ?></span>
                                 <?php endif ?>
                             </div>
                         </div>
 
-                        <?php if (!empty($netInfo['prefixes_v4'])): ?>
-                        <!-- IPv4 Prefixes -->
-                        <div class="space-y-2">
-                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">IPv4 Prefixes</label>
+                        <?php if (!empty($netInfo['upstreams'])): ?>
+                        <!-- Transit Providers / Upstreams -->
+                        <div class="space-y-2 sm:col-span-1 lg:col-span-2">
+                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">Transit Providers</label>
                             <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
-                                <div class="flex flex-wrap gap-1">
-                                    <?php foreach ($netInfo['prefixes_v4'] as $prefix): ?>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-mono"><?php echo htmlspecialchars($prefix) ?></span>
-                                    <?php endforeach ?>
-                                </div>
-                            </div>
-                        </div>
-                        <?php endif ?>
-
-                        <?php if (!empty($netInfo['prefixes_v6'])): ?>
-                        <!-- IPv6 Prefixes -->
-                        <div class="space-y-2">
-                            <label class="text-xs sm:text-sm font-medium text-muted-foreground">IPv6 Prefixes</label>
-                            <div class="px-3 py-2 rounded-lg bg-muted/50 border border-border/50">
-                                <div class="flex flex-wrap gap-1">
-                                    <?php foreach ($netInfo['prefixes_v6'] as $prefix): ?>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-mono"><?php echo htmlspecialchars($prefix) ?></span>
+                                <div class="flex flex-wrap gap-2">
+                                    <?php foreach ($netInfo['upstreams'] as $upstream): ?>
+                                    <a href="https://www.peeringdb.com/asn/<?php echo htmlspecialchars(str_replace('AS', '', $upstream['asn'])) ?>" 
+                                       target="_blank"
+                                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 transition-colors group">
+                                        <span class="font-mono text-xs font-semibold text-green-600 dark:text-green-400"><?php echo htmlspecialchars($upstream['asn']) ?></span>
+                                        <?php if (!empty($upstream['name'])): ?>
+                                        <span class="text-xs text-muted-foreground group-hover:text-foreground transition-colors"><?php echo htmlspecialchars($upstream['name']) ?></span>
+                                        <?php endif ?>
+                                    </a>
                                     <?php endforeach ?>
                                 </div>
                             </div>
@@ -782,6 +766,14 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                         </div>
                         <?php endif ?>
                     </div>
+                    
+                    <?php if (!empty($netInfo['fetched_at'])): ?>
+                    <div class="mt-3 pt-3 border-t border-border/30 flex justify-end">
+                        <span class="text-[10px] text-muted-foreground/60" title="Data from RIPE Stat & PeeringDB">
+                            Updated: <?php echo date('Y-m-d H:i', $netInfo['fetched_at']); ?> · Cached 24h
+                        </span>
+                    </div>
+                    <?php endif ?>
                 </div>
             </div>
             <?php endif ?>

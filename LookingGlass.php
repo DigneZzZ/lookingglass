@@ -266,7 +266,8 @@ class LookingGlass
     }
 
     /**
-     * Fetch network information from bgpview.io API.
+     * Fetch network information from RIPE Stat and PeeringDB APIs.
+     * Returns upstreams, peers, and IX - useful info for hosting customers.
      *
      * @param string $ip The IP address to lookup.
      * @return array|null Network information or null on failure.
@@ -284,7 +285,7 @@ class LookingGlass
             ]
         ]);
 
-        // Step 1: Get ASN and prefix from RIPE Stat
+        // Step 1: Get ASN from RIPE Stat
         $networkInfoUrl = 'https://stat.ripe.net/data/network-info/data.json?resource=' . urlencode($ip);
         $networkResponse = @file_get_contents($networkInfoUrl, false, $context);
         
@@ -298,9 +299,8 @@ class LookingGlass
         }
 
         $asn = $networkData['data']['asns'][0];
-        $currentPrefix = $networkData['data']['prefix'] ?? '';
 
-        // Step 2: Get ASN details from RIPE Stat
+        // Step 2: Get ASN holder name from RIPE Stat
         $asnOverviewUrl = 'https://stat.ripe.net/data/as-overview/data.json?resource=AS' . $asn;
         $asnResponse = @file_get_contents($asnOverviewUrl, false, $context);
         
@@ -313,39 +313,42 @@ class LookingGlass
             }
         }
 
-        // Step 3: Get announced prefixes from RIPE Stat
-        $prefixesUrl = 'https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS' . $asn;
-        $prefixesResponse = @file_get_contents($prefixesUrl, false, $context);
+        // Step 3: Get Upstreams (transit providers) from RIPE Stat
+        $upstreamsUrl = 'https://stat.ripe.net/data/asn-neighbours/data.json?resource=AS' . $asn;
+        $upstreamsResponse = @file_get_contents($upstreamsUrl, false, $context);
         
-        $prefixesV4 = [];
-        $prefixesV6 = [];
+        $upstreams = [];
         
-        if ($prefixesResponse !== false) {
-            $prefixesData = json_decode($prefixesResponse, true);
-            if (isset($prefixesData['data']['prefixes'])) {
-                foreach ($prefixesData['data']['prefixes'] as $prefix) {
-                    $p = $prefix['prefix'];
-                    if (strpos($p, ':') !== false) {
-                        // IPv6
-                        if (count($prefixesV6) < 5) {
-                            $prefixesV6[] = $p;
-                        }
-                    } else {
-                        // IPv4
-                        if (count($prefixesV4) < 10) {
-                            $prefixesV4[] = $p;
-                        }
+        if ($upstreamsResponse !== false) {
+            $upstreamsData = json_decode($upstreamsResponse, true);
+            if (isset($upstreamsData['data']['neighbours'])) {
+                foreach ($upstreamsData['data']['neighbours'] as $neighbour) {
+                    $neighbourAsn = $neighbour['asn'] ?? null;
+                    $type = $neighbour['type'] ?? '';
+                    $power = $neighbour['power'] ?? 0;
+                    
+                    // 'left' = upstream/transit provider
+                    if ($neighbourAsn && $type === 'left' && count($upstreams) < 6) {
+                        $upstreams[] = [
+                            'asn' => 'AS' . $neighbourAsn,
+                            'power' => $power
+                        ];
                     }
                 }
+                
+                // Sort by power (connection strength) descending
+                usort($upstreams, fn($a, $b) => $b['power'] <=> $a['power']);
+                
+                // Get names for top upstreams
+                foreach ($upstreams as &$upstream) {
+                    $upstream['name'] = self::getAsnName((int)str_replace('AS', '', $upstream['asn']), $context);
+                    unset($upstream['power']);
+                }
+                unset($upstream);
             }
         }
 
-        // If no prefixes found, at least add the current one
-        if (empty($prefixesV4) && !empty($currentPrefix) && strpos($currentPrefix, ':') === false) {
-            $prefixesV4[] = $currentPrefix;
-        }
-
-        // Step 4: Try to get IX info from PeeringDB API (optional)
+        // Step 4: Get IX from PeeringDB
         $ixList = [];
         $peeringDbUrl = 'https://www.peeringdb.com/api/netixlan?asn=' . $asn;
         $peeringDbResponse = @file_get_contents($peeringDbUrl, false, $context);
@@ -367,12 +370,41 @@ class LookingGlass
         return [
             'asn' => 'AS' . $asn,
             'asn_name' => $asnName,
-            'prefixes_v4' => $prefixesV4,
-            'prefixes_v6' => $prefixesV6,
+            'upstreams' => $upstreams,
             'ix_list' => $ixList,
             'peeringdb' => 'https://www.peeringdb.com/asn/' . $asn,
             'fetched_at' => time()
         ];
+    }
+
+    /**
+     * Get ASN holder name from RIPE Stat (cached in static array).
+     *
+     * @param int $asn The ASN number.
+     * @param resource $context Stream context.
+     * @return string ASN holder name or empty string.
+     */
+    private static function getAsnName(int $asn, $context): string
+    {
+        static $cache = [];
+        
+        if (isset($cache[$asn])) {
+            return $cache[$asn];
+        }
+        
+        $url = 'https://stat.ripe.net/data/as-overview/data.json?resource=AS' . $asn;
+        $response = @file_get_contents($url, false, $context);
+        
+        if ($response !== false) {
+            $data = json_decode($response, true);
+            if (isset($data['data']['holder'])) {
+                $cache[$asn] = $data['data']['holder'];
+                return $cache[$asn];
+            }
+        }
+        
+        $cache[$asn] = '';
+        return '';
     }
 
     /**
