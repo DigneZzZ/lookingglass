@@ -408,6 +408,167 @@ class LookingGlass
     }
 
     /**
+     * Map of country names to ISO 3166-1 alpha-2 codes.
+     */
+    private static array $countryMap = [
+        // Common countries
+        'netherlands' => 'nl', 'holland' => 'nl', 'amsterdam' => 'nl',
+        'germany' => 'de', 'deutschland' => 'de', 'frankfurt' => 'de', 'berlin' => 'de', 'munich' => 'de',
+        'france' => 'fr', 'paris' => 'fr', 'marseille' => 'fr',
+        'united kingdom' => 'gb', 'uk' => 'gb', 'england' => 'gb', 'london' => 'gb', 'britain' => 'gb',
+        'united states' => 'us', 'usa' => 'us', 'america' => 'us', 'new york' => 'us', 'los angeles' => 'us', 'dallas' => 'us', 'miami' => 'us', 'chicago' => 'us', 'seattle' => 'us', 'ashburn' => 'us',
+        'canada' => 'ca', 'toronto' => 'ca', 'montreal' => 'ca', 'vancouver' => 'ca',
+        'russia' => 'ru', 'moscow' => 'ru', 'saint petersburg' => 'ru', 'novosibirsk' => 'ru',
+        'ukraine' => 'ua', 'kyiv' => 'ua', 'kiev' => 'ua', 'kharkiv' => 'ua',
+        'poland' => 'pl', 'warsaw' => 'pl', 'krakow' => 'pl',
+        'estonia' => 'ee', 'tallinn' => 'ee',
+        'latvia' => 'lv', 'riga' => 'lv',
+        'lithuania' => 'lt', 'vilnius' => 'lt',
+        'finland' => 'fi', 'helsinki' => 'fi',
+        'sweden' => 'se', 'stockholm' => 'se', 'malmö' => 'se',
+        'norway' => 'no', 'oslo' => 'no',
+        'denmark' => 'dk', 'copenhagen' => 'dk',
+        'switzerland' => 'ch', 'zurich' => 'ch', 'geneva' => 'ch',
+        'austria' => 'at', 'vienna' => 'at',
+        'belgium' => 'be', 'brussels' => 'be',
+        'spain' => 'es', 'madrid' => 'es', 'barcelona' => 'es',
+        'portugal' => 'pt', 'lisbon' => 'pt',
+        'italy' => 'it', 'milan' => 'it', 'rome' => 'it',
+        'czech republic' => 'cz', 'czechia' => 'cz', 'prague' => 'cz',
+        'hungary' => 'hu', 'budapest' => 'hu',
+        'romania' => 'ro', 'bucharest' => 'ro',
+        'bulgaria' => 'bg', 'sofia' => 'bg',
+        'greece' => 'gr', 'athens' => 'gr',
+        'turkey' => 'tr', 'istanbul' => 'tr', 'ankara' => 'tr',
+        'israel' => 'il', 'tel aviv' => 'il',
+        'japan' => 'jp', 'tokyo' => 'jp', 'osaka' => 'jp',
+        'south korea' => 'kr', 'korea' => 'kr', 'seoul' => 'kr',
+        'china' => 'cn', 'beijing' => 'cn', 'shanghai' => 'cn', 'hong kong' => 'hk',
+        'taiwan' => 'tw', 'taipei' => 'tw',
+        'singapore' => 'sg',
+        'india' => 'in', 'mumbai' => 'in', 'delhi' => 'in', 'bangalore' => 'in',
+        'australia' => 'au', 'sydney' => 'au', 'melbourne' => 'au',
+        'new zealand' => 'nz', 'auckland' => 'nz',
+        'brazil' => 'br', 'sao paulo' => 'br', 'são paulo' => 'br',
+        'argentina' => 'ar', 'buenos aires' => 'ar',
+        'mexico' => 'mx', 'mexico city' => 'mx',
+        'south africa' => 'za', 'johannesburg' => 'za', 'cape town' => 'za',
+        'uae' => 'ae', 'dubai' => 'ae', 'united arab emirates' => 'ae',
+        'ireland' => 'ie', 'dublin' => 'ie',
+        'luxembourg' => 'lu',
+        'iceland' => 'is', 'reykjavik' => 'is',
+        'serbia' => 'rs', 'belgrade' => 'rs',
+        'croatia' => 'hr', 'zagreb' => 'hr',
+        'slovenia' => 'si', 'ljubljana' => 'si',
+        'slovakia' => 'sk', 'bratislava' => 'sk',
+        'moldova' => 'md', 'chisinau' => 'md',
+        'belarus' => 'by', 'minsk' => 'by',
+        'kazakhstan' => 'kz', 'almaty' => 'kz', 'astana' => 'kz', 'nur-sultan' => 'kz',
+        'georgia' => 'ge', 'tbilisi' => 'ge',
+        'armenia' => 'am', 'yerevan' => 'am',
+        'azerbaijan' => 'az', 'baku' => 'az',
+        'vietnam' => 'vn', 'hanoi' => 'vn', 'ho chi minh' => 'vn',
+        'thailand' => 'th', 'bangkok' => 'th',
+        'malaysia' => 'my', 'kuala lumpur' => 'my',
+        'indonesia' => 'id', 'jakarta' => 'id',
+        'philippines' => 'ph', 'manila' => 'ph',
+    ];
+
+    /**
+     * Get country code from location string.
+     * Parses location like "Amsterdam, Netherlands" or "Tallinn, Estonia".
+     *
+     * @param string $location Location string.
+     * @return string|null ISO 3166-1 alpha-2 country code (lowercase) or null.
+     */
+    public static function getCountryCode(string $location): ?string
+    {
+        // Remove emoji flags if present (they start with regional indicator symbols)
+        $location = preg_replace('/[\x{1F1E0}-\x{1F1FF}]+/u', '', $location);
+        $location = trim($location);
+        
+        // Normalize
+        $normalized = strtolower(trim($location));
+        
+        // Check full string
+        if (isset(self::$countryMap[$normalized])) {
+            return self::$countryMap[$normalized];
+        }
+        
+        // Split by comma and check each part
+        $parts = array_map('trim', explode(',', $normalized));
+        foreach (array_reverse($parts) as $part) {
+            $part = trim($part);
+            if (isset(self::$countryMap[$part])) {
+                return self::$countryMap[$part];
+            }
+        }
+        
+        // Check if any part contains a known location
+        foreach ($parts as $part) {
+            foreach (self::$countryMap as $key => $code) {
+                if (strpos($part, $key) !== false) {
+                    return $code;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get country flag SVG URL from flagcdn.com.
+     *
+     * @param string $countryCode ISO 3166-1 alpha-2 country code.
+     * @param int $width Width of the flag image.
+     * @return string URL to flag SVG.
+     */
+    public static function getFlagUrl(string $countryCode, int $width = 24): string
+    {
+        $code = strtolower($countryCode);
+        return "https://flagcdn.com/w{$width}/{$code}.png";
+    }
+
+    /**
+     * Get flag HTML img tag for a location.
+     *
+     * @param string $location Location string like "Amsterdam, Netherlands".
+     * @param int $width Width of the flag.
+     * @param string $class CSS class for the img tag.
+     * @return string HTML img tag or empty string if country not found.
+     */
+    public static function getFlagHtml(string $location, int $width = 20, string $class = 'inline-block'): string
+    {
+        $code = self::getCountryCode($location);
+        if ($code === null) {
+            return '';
+        }
+        
+        $url = self::getFlagUrl($code, $width);
+        $alt = strtoupper($code);
+        return sprintf(
+            '<img src="%s" alt="%s" class="%s" style="width:%dpx;height:auto;vertical-align:middle;border-radius:2px;" loading="lazy">',
+            htmlspecialchars($url),
+            htmlspecialchars($alt),
+            htmlspecialchars($class),
+            $width
+        );
+    }
+
+    /**
+     * Clean location string by removing emoji flags.
+     *
+     * @param string $location Location with possible emoji flags.
+     * @return string Clean location string.
+     */
+    public static function cleanLocation(string $location): string
+    {
+        // Remove emoji flags (regional indicator symbols U+1F1E6 to U+1F1FF)
+        $clean = preg_replace('/[\x{1F1E0}-\x{1F1FF}]+/u', '', $location);
+        return trim($clean);
+    }
+
+    /**
      * Executes a ping command.
      *
      * @param  string  $host  The target host.

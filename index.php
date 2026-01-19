@@ -218,7 +218,7 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             --radius: 0.5rem;
         }
 
-        .dark {
+        html.dark {
             --background: 224 71% 4%;
             --foreground: 213 31% 91%;
             --card: 224 71% 4%;
@@ -504,16 +504,47 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                     $linkHost = $parsedUrl['host'] ?? '';
                     return $linkHost !== $currentHost;
                 });
+                // Получаем флаг текущей локации
+                $currentLocationClean = LookingGlass::cleanLocation($templateData['current_location']);
+                $currentFlag = LookingGlass::getFlagHtml($currentLocationClean, 20, 'inline-block mr-1');
                 ?>
                 <?php if (!empty($filteredLocations)): ?>
-                <div class="relative">
-                    <select onchange="if(this.value) window.location = this.value" class="select pr-8 min-w-[140px] sm:min-w-[160px] text-sm">
-                        <option value=""><?php echo htmlspecialchars($templateData['current_location']) ?></option>
-                        <?php foreach ($filteredLocations as $location => $link): ?>
-                            <option value="<?php echo htmlspecialchars($link) ?>"><?php echo htmlspecialchars($location) ?></option>
-                        <?php endforeach ?>
-                    </select>
+                <div class="relative location-dropdown">
+                    <button type="button" class="select pr-8 min-w-[140px] sm:min-w-[180px] text-sm flex items-center gap-2 cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                        <?php echo $currentFlag ?><?php echo htmlspecialchars($currentLocationClean) ?>
+                        <svg class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="hidden absolute right-0 mt-1 w-full min-w-[180px] bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                        <div class="py-1">
+                            <div class="px-3 py-2 text-xs text-muted-foreground border-b border-border">Current</div>
+                            <div class="px-3 py-2 flex items-center gap-2 bg-accent/50">
+                                <?php echo $currentFlag ?><span class="text-sm"><?php echo htmlspecialchars($currentLocationClean) ?></span>
+                                <svg class="w-4 h-4 ml-auto text-primary" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="px-3 py-2 text-xs text-muted-foreground border-b border-t border-border">Other Locations</div>
+                            <?php foreach ($filteredLocations as $location => $link): 
+                                $locClean = LookingGlass::cleanLocation($location);
+                                $locFlag = LookingGlass::getFlagHtml($locClean, 20, 'inline-block');
+                            ?>
+                            <a href="<?php echo htmlspecialchars($link) ?>" class="px-3 py-2 flex items-center gap-2 hover:bg-accent transition-colors">
+                                <?php echo $locFlag ?><span class="text-sm"><?php echo htmlspecialchars($locClean) ?></span>
+                            </a>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
                 </div>
+                <script>
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!e.target.closest('.location-dropdown')) {
+                            document.querySelectorAll('.location-dropdown > div:last-child').forEach(d => d.classList.add('hidden'));
+                        }
+                    });
+                </script>
                 <?php endif ?>
             </div>
         </header>
@@ -537,8 +568,11 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                         <div class="space-y-2">
                             <label class="text-xs sm:text-sm font-medium text-muted-foreground">Location</label>
                             <div class="flex gap-2">
-                                <input type="text" class="input flex-1 text-sm" value="<?php echo $templateData['current_location'] ?>" readonly>
-                                <a href="https://www.openstreetmap.org/search?query=<?php echo urlencode($templateData['maps_query']); ?>" target="_blank" class="btn btn-outline shrink-0" title="View on map">
+                                <div class="input flex-1 text-sm flex items-center gap-2">
+                                    <?php echo LookingGlass::getFlagHtml($templateData['current_location'], 20) ?>
+                                    <span><?php echo htmlspecialchars(LookingGlass::cleanLocation($templateData['current_location'])) ?></span>
+                                </div>
+                                <a href="https://www.openstreetmap.org/search?query=<?php echo urlencode(LookingGlass::cleanLocation($templateData['maps_query'])); ?>" target="_blank" class="btn btn-outline shrink-0" title="View on map">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -551,7 +585,10 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                         <div class="space-y-2">
                             <label class="text-xs sm:text-sm font-medium text-muted-foreground">Facility</label>
                             <div class="flex gap-2">
-                                <input type="text" class="input flex-1" value="<?php echo $templateData['facility'] ?>" readonly>
+                                <div class="input flex-1 flex items-center gap-2">
+                                    <?php echo LookingGlass::getFlagHtml($templateData['facility'], 20) ?>
+                                    <span><?php echo htmlspecialchars(LookingGlass::cleanLocation($templateData['facility'])) ?></span>
+                                </div>
                                 <a href="<?php echo $templateData['facility_url'] ?>" target="_blank" class="btn btn-outline" title="PeeringDB">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

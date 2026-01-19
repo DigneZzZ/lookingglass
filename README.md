@@ -33,22 +33,17 @@ cat > .env << 'EOF'
 LG_DOMAIN=lg.example.com
 LG_EMAIL=admin@example.com
 
-# Локация сервера
+# Локация сервера (флаги определяются автоматически!)
 CURRENT_LOCATION=Amsterdam, Netherlands
-LG_FACILITY=Equinix AM5
-LG_FACILITY_URL=https://www.peeringdb.com/fac/18
+LG_FACILITY=Amsterdam DC
+LG_FACILITY_URL=https://www.peeringdb.com/
 
 # IP адреса для тестов
 LG_IPV4=1.2.3.4
 LG_IPV6=2001:db8::1
 
-# Кастомизация (опционально)
-LG_LOGO=<h2>My Looking Glass</h2>
-LG_LOGO_DARK=<h2>My Looking Glass</h2>
-LG_LOGO_URL=https://example.com
-
-# Мультилокации (опционально)
-LG_LOCATIONS=Amsterdam|https://lg-nl.example.com,Frankfurt|https://lg-de.example.com
+# Мультилокации (флаги определяются автоматически по названию!)
+LG_LOCATIONS=Amsterdam, Netherlands|https://lg-nl.example.com,Tallinn, Estonia|https://lg-ee.example.com
 EOF
 
 # 3. Запустите
@@ -56,6 +51,18 @@ docker compose -f docker-compose.caddy.yml up -d --build
 ```
 
 ✅ Looking Glass будет доступен на `https://lg.example.com` с автоматическим SSL от Let's Encrypt!
+
+## 🏳️ Автоматические флаги стран
+
+Флаги определяются автоматически по названию города или страны в локации. Просто укажите название:
+
+```
+CURRENT_LOCATION=Amsterdam, Netherlands    → 🇳🇱
+LG_LOCATIONS=Tallinn, Estonia|url,...     → 🇪🇪
+LG_FACILITY=Frankfurt DC                   → 🇩🇪
+```
+
+Поддерживается 80+ стран и городов. Не нужно добавлять эмодзи вручную!
 
 ## 📋 Требования
 
