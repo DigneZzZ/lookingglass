@@ -244,9 +244,13 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
             @apply bg-background text-foreground antialiased;
         }
 
-        /* Animated background - Light theme */
+        /* Animated background - Base (shared properties) */
         .bg-grid {
             background-size: 60px 60px;
+        }
+
+        /* Animated background - Light theme */
+        html:not(.dark) .bg-grid {
             background-image: 
                 linear-gradient(to right, hsl(220 20% 88% / 0.8) 1px, transparent 1px),
                 linear-gradient(to bottom, hsl(220 20% 88% / 0.8) 1px, transparent 1px);
@@ -259,10 +263,12 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 linear-gradient(to bottom, hsl(216 34% 17% / 0.5) 1px, transparent 1px);
         }
 
-        .bg-gradient-radial {
+        /* Radial gradient - Light theme */
+        html:not(.dark) .bg-gradient-radial {
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.12), transparent);
         }
 
+        /* Radial gradient - Dark theme */
         html.dark .bg-gradient-radial {
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.15), transparent);
         }
