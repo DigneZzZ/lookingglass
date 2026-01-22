@@ -263,13 +263,31 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 linear-gradient(to bottom, hsl(216 34% 17% / 0.5) 1px, transparent 1px);
         }
 
+        /* Radial gradient - Container */
+        .bg-gradient-radial {
+            position: relative;
+            isolation: isolate;
+        }
+
+        /* Radial gradient - Layer */
+        .bg-gradient-radial::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
         /* Radial gradient - Light theme */
-        html:not(.dark) .bg-gradient-radial {
+        html:not(.dark) .bg-gradient-radial::before {
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(221 83% 53% / 0.12), transparent);
         }
 
         /* Radial gradient - Dark theme */
-        html.dark .bg-gradient-radial {
+        html.dark .bg-gradient-radial::before {
             background: radial-gradient(ellipse 80% 50% at 50% -20%, hsl(217 91% 60% / 0.15), transparent);
         }
 
