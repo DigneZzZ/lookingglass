@@ -166,17 +166,22 @@ class LookingGlass
     public static function isValidIpv6(string $ip): bool
     {
         if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            // Older PHP versions allow IPv4-mapped/compatible addresses through these flags.
+            $packed = inet_pton($ip);
+            $prefix = substr($packed, 0, 12);
+            if ($prefix === str_repeat("\0", 10)."\xff\xff" || $prefix === str_repeat("\0", 12)) {
+                return self::isValidIpv4(inet_ntop(substr($packed, 12)));
+            }
             return true;
         }
         return false;
     }
 
     /**
-     * Validates and checks a host address.
-     * Differs from isValidIpvX because it also extracts the host.
+     * Extracts a hostname and resolves it to an allowed address of the requested family.
      *
      * @param  string  $host  The host to validate.
-     * @return string Actual hostname or empty if none found.
+     * @return string Pinned numeric address or empty if resolution or validation fails.
      */
     public static function isValidHost(string $host, string $type): string
     {
@@ -187,14 +192,30 @@ class LookingGlass
 
         if (filter_var('https://'.$host, FILTER_VALIDATE_URL)) {
             if ($host = parse_url('https://'.$host, PHP_URL_HOST)) {
-                if ($type === self::IPV4 && isset(dns_get_record($host, DNS_A)[0]['ip'])) {
-                    return $host;
-                }
-                if ($type === self::IPV6 && isset(dns_get_record($host, DNS_AAAA)[0]['ipv6'])) {
-                    return $host;
+                if ($type !== self::IPV4 && $type !== self::IPV6) {
+                    return '';
                 }
 
-                return '';
+                $records = dns_get_record($host, $type === self::IPV4 ? DNS_A : DNS_AAAA);
+                if ($records === false) {
+                    return '';
+                }
+                $key = $type === self::IPV4 ? 'ip' : 'ipv6';
+                $address = '';
+                foreach ($records as $record) {
+                    // CNAME metadata is not a destination; require a usable address answer.
+                    if (!isset($record[$key])) {
+                        continue;
+                    }
+                    $ip = $record[$key];
+                    if ($type === self::IPV4 ? !self::isValidIpv4($ip) : !self::isValidIpv6($ip)) {
+                        return '';
+                    }
+                    if ($address === '') {
+                        $address = $ip;
+                    }
+                }
+                return $address;
             }
         }
 
@@ -750,6 +771,18 @@ class LookingGlass
      */
     private static function procExecute(array $cmd, string $host, int $failCount = 2): bool
     {
+        // Recheck diagnostic targets here, including targets from older sessions.
+        // Only numeric, validated destinations may reach a diagnostic utility.
+        if (in_array($cmd[0], ['ping', 'mtr', 'traceroute'], true)) {
+            $ipv6 = in_array('-6', $cmd, true);
+            if ($ipv6 ? !self::isValidIpv6($host) : !self::isValidIpv4($host)) {
+                $host = self::isValidHost($host, $ipv6 ? self::IPV6 : self::IPV4);
+            }
+            if ($host === '') {
+                return false;
+            }
+        }
+
         // define output pipes
         $spec = [
             0 => ['pipe', 'r'],

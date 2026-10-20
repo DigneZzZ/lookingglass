@@ -20,6 +20,21 @@ if (file_exists(__DIR__.'/config.php')) {
 
 use Hybula\LookingGlass;
 
+// Only a configured FastCGI offload endpoint may authorize a transfer.
+// Never fall back to streaming a large file in an application worker.
+if (($_SERVER['LG_DOWNLOAD_OFFLOAD'] ?? '') !== '1') {
+    http_response_code(503);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Speedtest file offloading is not configured']);
+    exit;
+}
+
+if (!in_array($_SERVER['REQUEST_METHOD'] ?? '', ['GET', 'HEAD'], true)) {
+    http_response_code(405);
+    header('Allow: GET, HEAD');
+    exit;
+}
+
 LookingGlass::startSession();
 
 // Configuration
@@ -41,7 +56,7 @@ $allowedFiles = [
     '10GB'  => '/srv/files/10GB.bin',
 ];
 
-if (!isset($allowedFiles[$file])) {
+if (!is_string($file) || !isset($allowedFiles[$file])) {
     http_response_code(400);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'Invalid file requested']);
@@ -74,6 +89,7 @@ $currentCount = $_SESSION[SESSION_DOWNLOADS][$file];
 if ($currentCount >= $limit) {
     http_response_code(429);
     header('Content-Type: application/json');
+    header('X-Download-Error: Download limit reached for ' . $file . ' file');
     echo json_encode([
         'error' => "Download limit reached for {$file} file",
         'limit' => $limit,
@@ -83,8 +99,12 @@ if ($currentCount >= $limit) {
     exit;
 }
 
-// Increment download counter
-$_SESSION[SESSION_DOWNLOADS][$file]++;
+// The web interface checks HEAD before starting the actual GET.
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $_SESSION[SESSION_DOWNLOADS][$file]++;
+}
+$remaining = $limit - $_SESSION[SESSION_DOWNLOADS][$file];
+session_write_close();
 
 // Get file info
 $fileSize = filesize($filePath);
@@ -97,13 +117,8 @@ header('Content-Length: ' . $fileSize);
 header('Cache-Control: no-cache, no-store, must-revalidate');
 header('Pragma: no-cache');
 header('Expires: 0');
-header('X-Download-Remaining: ' . ($limit - $_SESSION[SESSION_DOWNLOADS][$file]));
+header('X-Download-Remaining: ' . $remaining);
 
-// Disable output buffering for large files
-if (ob_get_level()) {
-    ob_end_clean();
-}
-
-// Stream the file
-readfile($filePath);
+// Nginx owns the response body and its cross-session concurrency budget.
+header('X-Accel-Redirect: /_speedtest/' . $fileName);
 exit;

@@ -12,11 +12,21 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - ./:/var/www/html:ro
-      - speedtest_files:/srv/files:ro
       - /var/log/caddy:/var/log/caddy
     environment:
       LG_DOMAIN: ${LG_DOMAIN}
       LG_EMAIL: ${LG_EMAIL}
+    depends_on:
+      - php-fpm
+      - downloads
+
+  downloads:
+    image: nginx:mainline-alpine
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx/downloads.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/download-locations.conf:/etc/nginx/download-locations.conf:ro
+      - speedtest_files:/srv/files:ro
     depends_on:
       - php-fpm
 

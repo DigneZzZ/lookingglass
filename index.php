@@ -1045,10 +1045,9 @@ $templateData['csrfToken'] = $_SESSION[LookingGlass::SESSION_CSRF];
                 const response = await fetch(url, { method: 'HEAD' });
                 
                 if (response.status === 429) {
-                    // Rate limited - get error message
-                    const errorResponse = await fetch(url);
-                    const errorData = await errorResponse.json();
-                    showToast(`${errorData.error}. ${errorData.message}`, 'error');
+                    // A transient concurrency rejection must not trigger a GET.
+                    showToast(response.headers.get('X-Download-Error') ||
+                        'Downloads are temporarily limited. Please try again later.', 'error');
                     return;
                 }
                 

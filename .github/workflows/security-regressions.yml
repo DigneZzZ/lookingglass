@@ -1,0 +1,43 @@
+name: Security regressions
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  regressions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Syntax and whitespace
+        run: |
+          git diff --check ef584bf03da7573c790e02ce26bc6350a84a9c5f HEAD
+          find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l
+          python3 -m py_compile tests/*.py
+      - name: Diagnostic destination policy
+        run: php tests/destination_policy.php
+      - name: PHP 7.4 destination compatibility
+        run: |
+          docker run --rm -v "$PWD:/app:ro" -w /app php:7.4-cli sh -c 'php -l LookingGlass.php && php -l download.php && php -l index.php && php tests/destination_policy.php'
+      - name: Reproduce baseline configuration disclosure
+        run: |
+          git show ef584bf03da7573c790e02ce26bc6350a84a9c5f:docker/caddy/Caddyfile > "$RUNNER_TEMP/Caddyfile.baseline"
+          python3 tests/caddy_private_files.py "$RUNNER_TEMP/Caddyfile.baseline" --expect-vulnerable
+      - name: Private files and public route compatibility
+        run: python3 tests/caddy_private_files.py
+      - name: Download admission and PHP worker isolation
+        run: python3 tests/download_offload.py
+      - name: Compose configuration
+        env:
+          LG_DOMAIN: lg.example.invalid
+          LG_EMAIL: security-test@example.invalid
+        run: |
+          docker compose -f docker-compose.yml config --quiet
+          docker compose -f docker-compose.caddy.yml config --quiet
