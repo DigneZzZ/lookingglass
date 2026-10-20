@@ -1,5 +1,22 @@
 {$LG_DOMAIN} {
     encode gzip
+
+    # Reject private paths before PHP rewrites or static file serving.
+    @private path_regexp private (?i)(^|/)[.]|^/+(docker|tests)(/|$)|^/+(docker-compose[^/]*|config[.](dist[.])?php[^/]*)(/|$)
+    handle @private {
+        respond "Not found" 404
+    }
+
+    handle /download.php {
+        reverse_proxy downloads:80 {
+            header_up X-LG-Client {remote_host}
+            flush_interval -1
+        }
+    }
+
+    handle /_speedtest/* {
+        respond 404
+    }
     
     # Block direct access to speedtest files - must use download.php
     handle /files/* {
